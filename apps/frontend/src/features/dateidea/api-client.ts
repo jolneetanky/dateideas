@@ -1,7 +1,7 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { DateIdea } from "./types";
 import mockDateIdeaApi from "@/api/dateidea-api";
-import { Pagination } from "../pagination/types";
+import { Paginated } from "../pagination/types";
 
 class DateIdeaClient extends ApiClient<DateIdea> {
     async getAll(): Promise<ApiClientResponse<DateIdea[]>> {
@@ -22,7 +22,7 @@ class DateIdeaClient extends ApiClient<DateIdea> {
         })
     }
 
-    async getPage(page: number, pageSize: number): Promise<ApiClientResponse<Pagination<DateIdea>>> {
+    async getPage(page: number, pageSize: number): Promise<ApiClientResponse<Paginated<DateIdea>>> {
         const { status, message, data, error } = await mockDateIdeaApi.getPage(page, pageSize);
         return ({
             type: status,

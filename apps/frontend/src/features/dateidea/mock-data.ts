@@ -1,4 +1,4 @@
-import { Pagination } from "../pagination/types";
+import { Paginated } from "../pagination/types";
 import { DateIdea } from "./types";
 
 export const dateideas = [
@@ -14,7 +14,7 @@ export const dateideas = [
   }
 ];
 
-export const page: Pagination<DateIdea> = {
+export const page: Paginated<DateIdea> = {
   data: dateideas,
   page: 1,
   limit: 10, 

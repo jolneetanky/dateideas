@@ -1,4 +1,4 @@
-import { Pagination } from "@/features/pagination/types";
+import { Paginated } from "@/features/pagination/types";
 import { DateIdea } from "@/features/dateidea/types";
 import { ApiResponse } from "./types";
 
@@ -15,7 +15,7 @@ const dateideas = [
   }
 ];
 
-const dateIdeaPages: Pagination<DateIdea>[] = [
+const dateIdeaPages: Paginated<DateIdea>[] = [
     {
         data: [
             {
@@ -68,10 +68,10 @@ class MockDateIdeaApi {
             error: error,
         })
     }
-    async getPage(page: number, pageSize: number): Promise<ApiResponse<Pagination<DateIdea>>> {
+    async getPage(page: number, pageSize: number): Promise<ApiResponse<Paginated<DateIdea>>> {
         const res = dateIdeaPages.filter(pg => pg.page === page).at(0);
         const status = (res == undefined ? "error" : "success");
-        const error = (res == undefined ? "invalid DateIdea ID" : "")
+        const error = (res == undefined ? "page does not exist" : "")
         const data = (res == undefined ? null : res)
         return ({
             status: status,
