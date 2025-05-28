@@ -1,11 +1,11 @@
+import NavBar from "@/common/components/NavBar";
 import Sidebar from "@/common/components/Sidebar";
-import { useDisclosure } from "@mantine/hooks";
 import React from "react";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="MainLayout">
-      <Sidebar />
+    <div className="h-screen">
+      <NavBar className="h-[5%]" />
       {children}
     </div>
   );
