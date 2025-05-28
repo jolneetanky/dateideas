@@ -1,6 +1,8 @@
 // Import styles of packages that you've installed.
 // All packages except `@mantine/hooks` require styles imports
 import "@mantine/core/styles.css";
+import "./globals.css";
+import { Providers } from "@/Providers";
 
 import {
   ColorSchemeScript,
@@ -20,13 +22,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" {...mantineHtmlProps}>
+    <html lang="en" {...mantineHtmlProps} className="h-full">
       <head>
         <ColorSchemeScript />
       </head>
-      <body>
+      <body className="h-full">
         <MantineProvider>
-          <MainLayout>{children}</MainLayout>
+          <Providers>
+            <MainLayout>{children}</MainLayout>
+          </Providers>
         </MantineProvider>
       </body>
     </html>
