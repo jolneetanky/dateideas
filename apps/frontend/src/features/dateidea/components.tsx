@@ -51,12 +51,18 @@ const DateIdeaList = ({ dateideas }: { dateideas: DateIdea[] }) => {
   );
 };
 
-const GeneratorInput = ({ className }: { className?: string }) => {
+const GeneratorInput = ({
+  className,
+  handleGenerate,
+}: {
+  className?: string;
+  handleGenerate: () => void;
+}) => {
   const [value, setValue] = useState("");
 
   const handleSubmit = () => {
     event?.preventDefault();
-    console.log("SUBMITTED");
+    handleGenerate();
   };
 
   return (
