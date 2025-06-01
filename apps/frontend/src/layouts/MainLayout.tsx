@@ -6,7 +6,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-screen">
       <NavBar className="h-[5%]" />
-      {children}
+      <div className="h-full pb-[2%]">{children}</div>
     </div>
   );
 };

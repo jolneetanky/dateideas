@@ -1,7 +1,7 @@
 import { DateIdea } from "../dateidea/types";
-import { Pagination } from "./types";
+import { Paginated } from "./types";
 
-const dateideaPages: Pagination<DateIdea>[] = [
+const dateideaPages: Paginated<DateIdea>[] = [
     {
         data: [
             {
