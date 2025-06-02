@@ -1,10 +1,9 @@
 from config.logging_config import logger
-from factory.factory import build_producer
 from factory.factory import build_gatherers
 
 def main() -> None:
-    producer = build_producer("queue")
-    gatherers = build_gatherers(producer)
+    # create gatherers
+    gatherers = build_gatherers()
 
     for gatherer in gatherers:
         gatherer.gather()

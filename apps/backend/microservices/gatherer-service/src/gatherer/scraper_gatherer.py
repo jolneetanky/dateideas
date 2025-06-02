@@ -1,29 +1,37 @@
 import logging
-import re # python's regex lib
 from gatherer.base import Gatherer
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from formatter._types import FormattedData
+from tempfile import mkdtemp
+import shutil
 
-class Scraper(Gatherer):
+class ScraperGatherer(Gatherer):
     def gather(self):
         # logger = logging.getLogger("gatherer_service_logger.")
         options = Options()
-        options.add_argument(" - headless") # Run browser in the background
+        options.add_argument("--headless") # Run browser in the background
+
+        tmpdir = mkdtemp()
+
+        options.add_argument(f"--user-data-dir={tmpdir}") # Temp file for chrome to run headlessly
         driver = webdriver.Chrome(service=Service(), options=options)
         driver.get("https://www.google.com/maps")
 
-        logger = logging.getLogger("gatherer_service.gatherer.scraper")
+        logger = logging.getLogger("gatherer_service.gatherer.scraper_gatherer")
 
         # click accept all GDPR cookies
         try:
             accept_button = driver.find_element(By.CSS_SELECTOR, "[aria-label='Accept all']")
             accept_button.click()
-        except NoSuchElementException:
+        # except NoSuchElementException:
+        #     logger.exception("No GPDR cookie requirements detected")
+        except Exception as e:
             logger.exception("No GPDR cookie requirements detected")
         
         # fill in search bar and click search button
@@ -40,20 +48,9 @@ class Scraper(Gatherer):
         )
 
         for item in business_items:
-            name = item.find_element(By.CSS_SELECTOR, "div.fontHeadlineSmall").text
-            link = item.find_element(By.CSS_SELECTOR, "a[jsaction]").get_attribute("href")
-
-            # stars, number of reviews
-            reviews_element = item.find_element(By.CSS_SELECTOR, "span[role='img']")
-            reviews_text = reviews_element.get_attribute("aria-label")
-            match = re.match(r"(\d+\.\d+) stars (\d+[,]*\d+) Reviews", reviews_text)
-            if match:
-                stars = float(match.group(1))
-            review_count = int(match.group(2).replace(",", ""))
-
-            info_div = item.find_element(By.CSS_SELECTOR, ".fontBodyMedium")
-            spans = info_div.find_elements(By.XPATH, ".//span[not(@*) or @style]")
-            details = [span.text for span in spans if span.text.strip()]
-            print(f"Stars: {stars}, Reviews: {review_count}")
-            print(f"Business: {name}, Link: {link}")
-            print("Details:", details)
+            data = self.formatter.format(item)
+            print("DATA", data)
+            # await self.queue.enqueue(data)
+        
+        driver.quit()
+        shutil.rmtree(tmpdir)

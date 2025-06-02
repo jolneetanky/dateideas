@@ -9,4 +9,4 @@ class MockGatherer(Gatherer):
             {"title": "ArtScience Museum", "description": "Sike"},
         ]
 
-        self._producer.produce(data)
+        print(self.formatter.format(data))

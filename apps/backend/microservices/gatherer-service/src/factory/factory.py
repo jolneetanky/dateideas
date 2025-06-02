@@ -1,15 +1,17 @@
-from producer.base import Producer
 from gatherer.base import Gatherer
 from gatherer.mock_gatherer import MockGatherer
-from gatherer.scraper import Scraper
+from gatherer.scraper_gatherer import ScraperGatherer
+from formatter.base import Formatter
+from formatter.scraper_formatter import ScraperFormatter
 
-def build_producer(target: str) -> Producer:
-    return Producer(target)
+scraper_formatter = ScraperFormatter()
 
-def build_gatherers(producer: Producer) -> list[Gatherer]:
-    gatherers = [
-        MockGatherer(producer),
-        Scraper(producer),
+# initialize scrapers
+# mock_gatherer = MockGatherer(scraper_formatter)
+scraper_gatherer = ScraperGatherer(scraper_formatter)
+
+def build_gatherers():
+    return [
+        # mock_gatherer,
+        scraper_gatherer,
     ]
-
-    return gatherers
