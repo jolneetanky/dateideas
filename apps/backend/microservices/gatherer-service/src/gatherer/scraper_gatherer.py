@@ -11,6 +11,9 @@ from formatter._types import FormattedData
 from tempfile import mkdtemp
 import shutil
 
+# Get free proxies for rotating
+def get_free_proxies(driver):
+    driver.get()
 class ScraperGatherer(Gatherer):
     def gather(self):
         # logger = logging.getLogger("gatherer_service_logger.")
