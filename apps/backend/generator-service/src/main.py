@@ -1,5 +1,25 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import pandas as pd
+import faiss
+import numpy as np
+import requests
+from urllib.parse import quote
+from dataclasses import dataclass
+
+@dataclass
+class FormattedData(): 
+    name: str
+    amenity: str
+    lat: str
+    lon: str
+    street: str
+    city: str
+    house_number: str
+    floor: str
+    unit: str
+    website: str
+    link: str
 
 mock_data = [
     {'type': 'node', 'id': 11663229533, 'lat': 1.3070705, 'lon': 103.8337662, 'tags': {'access': 'permissive', 'amenity': 'drinking_water', 'bottle': 'yes', 'fee': 'no'}},
@@ -23,40 +43,143 @@ mock_data = [
 ]
 mock_query = "Date for 2 at orchard cafe"
 
-model_name = "EleutherAI/gpt-neo-1.3B"
+# flatten tags and see how it goes lol
+# this should be in gatherer service.
+def format_data(data):
+    tag_features = set(['amenity', 'name', 'website'])
 
-# load model and tokenizer
-print("Loading model...")
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
+    res = []
+    for row in data:
+        row = row.copy()
+        
+        dct = {
+            "name": row['tags'].get('name', ""),
+            "street": row['tags'].get('addr:street', ""),
+            "city": row['tags'].get('addr:city', ""),
+            "house_number": row['tags'].get('addr:housenumber', ""),
+            "floor": row['tags'].get('addr:floor', ""),
+            "unit": row['tags'].get('addr:unit', ""),
+        }
 
-print("Model and tokenizer loaded successfully!")
+        # order = ["name", "street", "house_number", "floor", "unit"]
 
-def generate_recommendations(user_input, context, max_length=100, temperature=0.7):
+        # addr = []
+        # for item in order:
+        #     if dct[item] != "":
+        #         addr.append(dct[item])
+        # addr = ", ".join(addr)
+
+        for k, v in dct.items():
+            row[k] = v
+
+        query = dct['name']
+        if query != "":
+            query += f", {dct['street']}"
+        formatted_query = quote(query)
+        if query == "":
+            formatted_query = quote(f"{row['lat']},{row['lon']}")    
+        gmaps_link = f"https://google.com/maps/search/?api=1&query={formatted_query}"
+
+        row['link'] = gmaps_link
+        # row['address'] = addr
+
+        # flatten `tags`
+        for k, v in row.get('tags', {}).items():
+            if k in tag_features:
+                row[k] = v
+        
+        # remove unneeded fields
+        row.pop('type', '')
+        row.pop('id', '')
+        row.pop('tags', {})
+        res.append(row)
+    
+    return res
+
+def combine_features(row):
+    '''
+    Combines key features of a location into a single string.
+
+    Parameters: row(pd.Series): A row from the DataFrame representing a single location.
+
+    Returns:
+    str: A combined string of key location features. These are the main features we care about.
+    '''
+    return f"""
+    Latitude: {row['lat']},
+    Longitude: {row['lon']},
+    Amenity: {row['amenity']},
+    Name: {row['name']},
+    Street: {row['street']},
+    City: {row['city']},
     """
-    Generats recommendations based on user input and context.
-    """
-    # Combine user input and context for the prompt
-    prompt = (
-        f"User Input: {user_input} \n"
-        f"Context: {context} \n"
-        "Recommendations: \n"
-    )
 
-    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-    outputs = model.generate(
-        inputs["input_ids"],
-        max_length=max_length,
-        temperatrue=temperature,
-        pad_token_id=tokenizer.eos_token_id
-    )
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+def generate_recommendations(prompt, formatted_data):
+    # Generate and display recommendations
+
+    df = pd.DataFrame(formatted_data)
+
+    # Apply the function to create a new column with combined features
+    df['combined_features'] = df.apply(combine_features, axis=1) 
+
+    # Define vector dimensionality (3072 dimentions)
+    dim = 3072
+
+    # Create a FAISS index for L2 distance searching
+    index = faiss.IndexFlatL2(dim)
+
+    # Initialize an array to hold the vector representations of the combined features
+    # Shape: (number of locations, dimension)
+    # This array `X` is of shape `numLoc` by `dimension`, filled with 0s.
+    X = np.zeros((len(df['combined_features']), dim), dtype=np.float32)
+
+    # Iterate through each combined feature representation in the DataFrame
+    # NOTE: `_repr` is Python's conventional way of saying "string representation".
+    for i, _repr in enumerate(df['combined_features']):
+        # Print progress every 10 locations processed
+        if i % 10 == 0:
+           print("Processed {}/{}".format(i, len(df['combined_features']))) 
+        
+        # Send a POST req to the local Llama model API to generate embeddings
+        res = requests.post("http://localhost:11434/api/embeddings",
+                            json={"model": "llama3.2", # Specify the model to use
+                                  "prompt": _repr}) # Provide the combined features as the prompt
+
+        # Extract embedding from API response
+        embedding = res.json()['embedding']
+
+        # Store generated embedding in numpy array `X`
+        X[i] = np.array(embedding)
+
+    # Add embeddings to the FAISS Index
+    index.add(X)
+
+    # Save the FAISS Index to a file for future use
+    faiss.write_index(index, "index")
+
+    # Optionally, you can load the index from the file in subsequent runs
+    # index = faiss.read_index("index")
+    
+    # Generate embedding for the input description
+    res = requests.post("http://localhost:11434/api/embeddings",
+                    json={"model": "llama3.2", "prompt": prompt})
+    print(res.json())
+    embedding = np.array(res.json()['embedding']).reshape(1, -1)
+
+    # Perform a search in the FAISS index for the top 5 similar locations
+    # ie. those in the index that match our input embedding the most
+    distances, indices = index.search(embedding, 5)
+    print(distances, indices)
+
+    # Display the results in a readable format
+    print("\nTop 5 date ideas:")
+    for i in range(len(indices[0])):
+        idx = indices[0][i]
+        print("HII", df.iloc[idx])
 
 def main():
-    # Generate and display recommendations
-    print("Generating recommendations based on user query...")
-    recommendations = generate_recommendations(mock_query, mock_data)
-    print("RECOMMENDATIONS", recommendations)
+    mock_formatted_data = format_data(mock_data)
+    generate_recommendations("Date for 2 in orchard", mock_formatted_data)
 
 if __name__ == '__main__':
     main()
