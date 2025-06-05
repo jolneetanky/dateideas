@@ -13,3 +13,4 @@ class GeneratedData:
     website: str = ""
     link: str = ""
     budget: str = ""
+    description: str = ""
