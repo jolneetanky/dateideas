@@ -1,12 +1,6 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-import pandas as pd
-import faiss
-import numpy as np
-import requests
 from urllib.parse import quote
 from dataclasses import dataclass
-
+from generator.ollama_generator import OllamaGenerator
 @dataclass
 class FormattedData(): 
     name: str
@@ -61,14 +55,6 @@ def format_data(data):
             "unit": row['tags'].get('addr:unit', ""),
         }
 
-        # order = ["name", "street", "house_number", "floor", "unit"]
-
-        # addr = []
-        # for item in order:
-        #     if dct[item] != "":
-        #         addr.append(dct[item])
-        # addr = ", ".join(addr)
-
         for k, v in dct.items():
             row[k] = v
 
@@ -81,7 +67,6 @@ def format_data(data):
         gmaps_link = f"https://google.com/maps/search/?api=1&query={formatted_query}"
 
         row['link'] = gmaps_link
-        # row['address'] = addr
 
         # flatten `tags`
         for k, v in row.get('tags', {}).items():
@@ -96,90 +81,10 @@ def format_data(data):
     
     return res
 
-def combine_features(row):
-    '''
-    Combines key features of a location into a single string.
-
-    Parameters: row(pd.Series): A row from the DataFrame representing a single location.
-
-    Returns:
-    str: A combined string of key location features. These are the main features we care about.
-    '''
-    return f"""
-    Latitude: {row['lat']},
-    Longitude: {row['lon']},
-    Amenity: {row['amenity']},
-    Name: {row['name']},
-    Street: {row['street']},
-    City: {row['city']},
-    """
-
-def generate_recommendations(prompt, formatted_data):
-    # Generate and display recommendations
-
-    df = pd.DataFrame(formatted_data)
-
-    # Apply the function to create a new column with combined features
-    df['combined_features'] = df.apply(combine_features, axis=1) 
-
-    # Define vector dimensionality (3072 dimentions)
-    dim = 3072
-
-    # Create a FAISS index for L2 distance searching
-    index = faiss.IndexFlatL2(dim)
-
-    # Initialize an array to hold the vector representations of the combined features
-    # Shape: (number of locations, dimension)
-    # This array `X` is of shape `numLoc` by `dimension`, filled with 0s.
-    X = np.zeros((len(df['combined_features']), dim), dtype=np.float32)
-
-    # Iterate through each combined feature representation in the DataFrame
-    # NOTE: `_repr` is Python's conventional way of saying "string representation".
-    for i, _repr in enumerate(df['combined_features']):
-        # Print progress every 10 locations processed
-        if i % 10 == 0:
-           print("Processed {}/{}".format(i, len(df['combined_features']))) 
-        
-        # Send a POST req to the local Llama model API to generate embeddings
-        res = requests.post("http://localhost:11434/api/embeddings",
-                            json={"model": "llama3.2", # Specify the model to use
-                                  "prompt": _repr}) # Provide the combined features as the prompt
-
-        # Extract embedding from API response
-        embedding = res.json()['embedding']
-
-        # Store generated embedding in numpy array `X`
-        X[i] = np.array(embedding)
-
-    # Add embeddings to the FAISS Index
-    index.add(X)
-
-    # Save the FAISS Index to a file for future use
-    faiss.write_index(index, "index")
-
-    # Optionally, you can load the index from the file in subsequent runs
-    # index = faiss.read_index("index")
-    
-    # Generate embedding for the input description
-    res = requests.post("http://localhost:11434/api/embeddings",
-                    json={"model": "llama3.2", "prompt": prompt})
-    print(res.json())
-    embedding = np.array(res.json()['embedding']).reshape(1, -1)
-
-    # Perform a search in the FAISS index for the top 5 similar locations
-    # ie. those in the index that match our input embedding the most
-    distances, indices = index.search(embedding, 5)
-    print(distances, indices)
-
-    # Display the results in a readable format
-    print("\nTop 5 date ideas:")
-    for i in range(len(indices[0])):
-        idx = indices[0][i]
-        print("HII", df.iloc[idx])
-
 def main():
+    ollama_generator = OllamaGenerator()
     mock_formatted_data = format_data(mock_data)
-    generate_recommendations("Date for 2 in orchard", mock_formatted_data)
+    print(ollama_generator.generate("Date for 2 in orchard", mock_formatted_data))
 
 if __name__ == '__main__':
     main()

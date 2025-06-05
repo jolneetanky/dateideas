@@ -1,9 +1,9 @@
-name: Gatherer Service CI
+name: Generator Service CI
 
 on:
   push:
     paths:
-      - 'apps/backend/gatherer-service/**' # runs for any changes made in this directory
+      - 'apps/backend/generator-service/**' # runs for any changes made in this directory
     branches:
       - '**'           # runs on push to any branch
   pull_request:
@@ -16,7 +16,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: apps/backend/gatherer-service
+        working-directory: apps/backend/generator-service
 
     steps:
       - name: Checkout code
