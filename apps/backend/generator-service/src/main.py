@@ -1,5 +1,19 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from urllib.parse import quote
+from dataclasses import dataclass
+from generator.ollama_generator import OllamaGenerator
+@dataclass
+class FormattedData(): 
+    name: str
+    amenity: str
+    lat: str
+    lon: str
+    street: str
+    city: str
+    house_number: str
+    floor: str
+    unit: str
+    website: str
+    link: str
 
 mock_data = [
     {'type': 'node', 'id': 11663229533, 'lat': 1.3070705, 'lon': 103.8337662, 'tags': {'access': 'permissive', 'amenity': 'drinking_water', 'bottle': 'yes', 'fee': 'no'}},
@@ -23,40 +37,54 @@ mock_data = [
 ]
 mock_query = "Date for 2 at orchard cafe"
 
-model_name = "EleutherAI/gpt-neo-1.3B"
+# flatten tags and see how it goes lol
+# this should be in gatherer service.
+def format_data(data):
+    tag_features = set(['amenity', 'name', 'website'])
 
-# load model and tokenizer
-print("Loading model...")
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto", torch_dtype=torch.float16)
+    res = []
+    for row in data:
+        row = row.copy()
+        
+        dct = {
+            "name": row['tags'].get('name', ""),
+            "street": row['tags'].get('addr:street', ""),
+            "city": row['tags'].get('addr:city', ""),
+            "house_number": row['tags'].get('addr:housenumber', ""),
+            "floor": row['tags'].get('addr:floor', ""),
+            "unit": row['tags'].get('addr:unit', ""),
+        }
 
-print("Model and tokenizer loaded successfully!")
+        for k, v in dct.items():
+            row[k] = v
 
-def generate_recommendations(user_input, context, max_length=100, temperature=0.7):
-    """
-    Generats recommendations based on user input and context.
-    """
-    # Combine user input and context for the prompt
-    prompt = (
-        f"User Input: {user_input} \n"
-        f"Context: {context} \n"
-        "Recommendations: \n"
-    )
+        query = dct['name']
+        if query != "":
+            query += f", {dct['street']}"
+        formatted_query = quote(query)
+        if query == "":
+            formatted_query = quote(f"{row['lat']},{row['lon']}")    
+        gmaps_link = f"https://google.com/maps/search/?api=1&query={formatted_query}"
 
-    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-    outputs = model.generate(
-        inputs["input_ids"],
-        max_length=max_length,
-        temperatrue=temperature,
-        pad_token_id=tokenizer.eos_token_id
-    )
-    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+        row['link'] = gmaps_link
+
+        # flatten `tags`
+        for k, v in row.get('tags', {}).items():
+            if k in tag_features:
+                row[k] = v
+        
+        # remove unneeded fields
+        row.pop('type', '')
+        row.pop('id', '')
+        row.pop('tags', {})
+        res.append(row)
+    
+    return res
 
 def main():
-    # Generate and display recommendations
-    print("Generating recommendations based on user query...")
-    recommendations = generate_recommendations(mock_query, mock_data)
-    print("RECOMMENDATIONS", recommendations)
+    ollama_generator = OllamaGenerator()
+    mock_formatted_data = format_data(mock_data)
+    print(ollama_generator.generate("Date for 2 in orchard", mock_formatted_data))
 
 if __name__ == '__main__':
     main()
