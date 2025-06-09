@@ -2,7 +2,13 @@
 import { Drawer, Burger } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 
-const Sidebar = () => {
+type Props = {
+  isOpen: () => void;
+  handleClose: () => void;
+};
+
+const Sidebar = ({ isOpen, handleClose }: Props) => {
+  /*
   const content = ["hi", "byetrrrrrr"].map((item, idx) => (
     <div key={idx}>{item}</div>
   ));
@@ -17,6 +23,7 @@ const Sidebar = () => {
       </Drawer>
     </>
   );
+  */
 };
 
 export default Sidebar;

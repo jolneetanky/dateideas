@@ -9,7 +9,7 @@ import {
   MantineProvider,
   mantineHtmlProps,
 } from "@mantine/core";
-import MainLayout from "@/layouts/MainLayout";
+import MainLayout from "@/layouts/main-layout/MainLayout";
 
 export const metadata = {
   title: "DateIdeas",
