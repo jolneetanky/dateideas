@@ -1,4 +1,7 @@
-.navbar {
+.mainLayout {
+  height: 100vh;
+}
+/* .navbar {
   width: 80px;
   height: 750px;
   padding: var(--mantine-spacing-md);
@@ -32,4 +35,4 @@
       color: var(--mantine-color-blue-light-color);
     }
   }
-}
+} */

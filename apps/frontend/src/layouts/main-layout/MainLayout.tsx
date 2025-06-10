@@ -1,6 +1,6 @@
 "use client";
 
-// import { Navbar } from "@/common/components/NavBar";
+import { Navbar } from "@/layouts/main-layout/NavBar";
 import {
   IconCalendarStats,
   IconDeviceDesktopAnalytics,
@@ -21,9 +21,9 @@ import {
   Tooltip,
   UnstyledButton,
 } from "@mantine/core";
-import Sidebar from "@/common/components/Sidebar";
-import classes from "./MainLayout.module.css";
+import classes from "./styles/MainLayout.module.css";
 import { useState } from "react";
+import { IsSidebarOpenProvider } from "./contexts/IsSidebarOpenContext";
 
 interface NavbarLinkProps {
   icon: typeof IconHome2;
@@ -57,11 +57,6 @@ const mockdata = [
 ];
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebarOpen = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-
   const [active, setActive] = useState(2);
   const links = mockdata.map((link, index) => (
     <NavbarLink
@@ -73,49 +68,12 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   ));
 
   return (
-    <AppShell
-      navbar={{
-        width: isSidebarOpen ? 200 : 80, // on laptop, expand width if we open sidebar
-        breakpoint: "sm",
-        collapsed: { mobile: true },
-      }}
-    >
-      {/* Navbar */}
-      <AppShell.Navbar p="md">
-        <Group justify="space-between">
-          <Burger
-            opened={isSidebarOpen}
-            onClick={toggleSidebarOpen}
-            size="sm"
-          />
-        </Group>
-
-        <div className={classes.navbarMain}>
-          <Stack justify="center" gap={0}>
-            {links}
-          </Stack>
-        </div>
-      </AppShell.Navbar>
-
-      <AppShell.Main>{children}</AppShell.Main>
-    </AppShell>
-
-    /*
-    <div className="h-screen">
-      <NavBar className="h-[5%]" />
-      <div className="h-full pb-[2%]">{children}</div>
+    <div className={`${classes.mainLayout}`}>
+      <IsSidebarOpenProvider>
+        <Navbar />
+      </IsSidebarOpenProvider>
+      {children}
     </div>
-    */
-    // <div className="flex h-screen">
-    //   {/* Sidebar */}
-    //   <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
-    // </div>
-    // <Shell children={children} header={<></>} navbar={<Navbar />} />
-    // I just need a collapsible Navbar
-    // <Navbar />
-
-    // ON LAPTOP:
-    // sidebar can be expanded or collapsed.
   );
 };
 
