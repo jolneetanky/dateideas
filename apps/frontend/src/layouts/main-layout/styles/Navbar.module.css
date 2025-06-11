@@ -15,6 +15,9 @@
 .navbarMain {
   flex: 1;
   margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* LINK STYLES */

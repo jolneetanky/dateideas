@@ -1,8 +1,7 @@
-"use client";
-
 import { Sidebar } from "@/layouts/main-layout/Sidebar";
 import classes from "./styles/MainLayout.module.css";
 import { IsSidebarOpenProvider } from "./contexts/IsSidebarOpenContext";
+import { ThemeToggle } from "@/features/theme/ThemeToggle";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -10,6 +9,8 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <IsSidebarOpenProvider>
         <Sidebar />
       </IsSidebarOpenProvider>
+
+      <ThemeToggle />
       {children}
     </div>
   );

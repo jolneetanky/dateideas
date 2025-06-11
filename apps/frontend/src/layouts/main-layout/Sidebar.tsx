@@ -3,7 +3,7 @@ import { Burger, Drawer, Group } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { useIsSidebarOpenCtx } from "./contexts/IsSidebarOpenContext";
 import classes from "./styles/Navbar.module.css";
-import { SidebarLinks } from "./SidebarLinks";
+import { SidebarLinks, Logout } from "./SidebarLinks";
 
 export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width: 768px");
@@ -16,6 +16,7 @@ export const Sidebar = () => {
       <Burger opened={isSidebarOpen} onClick={toggleSidebarOpen} size="sm" />
       <Drawer opened={isSidebarOpen} onClose={closeSidebar}>
         <SidebarLinks />
+        <Logout />
       </Drawer>
     </div>
   ) : (
@@ -33,6 +34,7 @@ export const Sidebar = () => {
       {/* Sidebar content */}
       <div className={classes.navbarMain}>
         <SidebarLinks />
+        <Logout />
       </div>
     </nav>
   );

@@ -84,3 +84,29 @@ export const SidebarLinks = (): JSX.Element => {
     </Stack>
   );
 };
+
+export const Logout = ({ onClick }: { onClick: () => {} }): JSX.Element => {
+  const [active, setActive] = useState(false);
+
+  const toggleActive = () => {
+    setActive((prev) => !prev);
+  };
+
+  return (
+    <div className={`${classes.expandedLink}`}>
+      <Tooltip
+        label="Logout"
+        position="right"
+        transitionProps={{ duration: 0 }}
+      >
+        <UnstyledButton
+          onClick={onClick}
+          className={`${classes.link}`}
+          data-active={active || undefined}
+        >
+          <IconLogout size={20} stroke={1.5} />
+        </UnstyledButton>
+      </Tooltip>
+    </div>
+  );
+};

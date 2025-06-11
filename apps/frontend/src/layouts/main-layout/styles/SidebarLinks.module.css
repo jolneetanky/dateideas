@@ -33,3 +33,7 @@
   gap: 3;
 }
 
+.expandedLogout {
+  display: "flex";
+  justify-content: "flex-end";
+}
