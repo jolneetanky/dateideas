@@ -1,4 +1,4 @@
-import HomePage from "@/views/HomePage/HomePage";
+import HomePage from "@/pages/HomePage";
 
 export default function Home() {
   return <HomePage />;
