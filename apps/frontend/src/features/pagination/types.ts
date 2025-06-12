@@ -1,11 +1,11 @@
 import { usePagination } from "@mantine/hooks";
 
 export type Paginated<T> = {
-    data: T[];
-    page: number;
-    limit: number;
-    totalItems: number;
-    totalPages: number;
-}
+  pageNumber: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  data: T[];
+};
 
 export type UsePaginationReturn = ReturnType<typeof usePagination>;

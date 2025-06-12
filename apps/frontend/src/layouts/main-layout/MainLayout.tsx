@@ -1,11 +1,17 @@
 import { Sidebar } from "@/layouts/main-layout/Sidebar";
-import classes from "./styles/MainLayout.module.css";
 import { IsSidebarOpenProvider } from "./contexts/IsSidebarOpenContext";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 
+const MainLayoutStyle = {
+  container: {
+    display: "flex",
+    height: "100vh",
+  },
+};
+
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className={`${classes.mainLayout}`}>
+    <div style={MainLayoutStyle.container}>
       <IsSidebarOpenProvider>
         <Sidebar />
       </IsSidebarOpenProvider>
