@@ -4,7 +4,7 @@ import InputBar from "@/features/generator/components";
 const HomePageStyle = {
   container: {
     display: "flex",
-    flexDirection: "column",
+    // flexDirection: "column",
     height: "100vh",
     width: "100%",
   },
@@ -18,7 +18,7 @@ const HomePageStyle = {
 
 export default function HomePage() {
   return (
-    <div style={HomePageStyle.container}>
+    <div style={HomePageStyle.container} className="flex-col">
       <div style={HomePageStyle.inputBarWrapper}>
         <InputBar />
       </div>
