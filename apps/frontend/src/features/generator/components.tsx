@@ -7,6 +7,9 @@
 
 import { Button, TextInput } from "@mantine/core";
 import { useInputBar } from "./hooks";
+import { PageNav } from "../pagination/components";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { generatedIdeasPageChanged } from "./slice";
 
 const InputBarStyle = {
   container: {
@@ -15,7 +18,7 @@ const InputBarStyle = {
   },
 };
 
-const InputBar = () => {
+export const InputBar = () => {
   const { inputValue, handleChange, handleSubmit /*loading, error*/ } =
     useInputBar();
 
@@ -33,4 +36,13 @@ const InputBar = () => {
   );
 };
 
-export default InputBar;
+export const GeneratedIdeasPageNav = () => {
+  // when i toggle the page, my pages should update accordingly.
+  const dispatch = useAppDispatch();
+
+  const handlePageChange = (page: number) => {
+    dispatch(generatedIdeasPageChanged(page));
+  };
+
+  return <PageNav totalPages={5} handlePageChange={handlePageChange} />;
+};
