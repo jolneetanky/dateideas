@@ -3,24 +3,13 @@
 import { JSX, useState } from "react";
 import {
   IconCalendarStats,
-  IconDeviceDesktopAnalytics,
-  IconFingerprint,
-  IconGauge,
   IconHome2,
   IconLogout,
   IconSettings,
-  IconSwitchHorizontal,
   IconUser,
 } from "@tabler/icons-react";
 
-import {
-  Burger,
-  Drawer,
-  Group,
-  Stack,
-  Tooltip,
-  UnstyledButton,
-} from "@mantine/core";
+import { Stack, Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./styles/SidebarLinks.module.css";
 import { useIsSidebarOpenCtx } from "./contexts/IsSidebarOpenContext";
 
@@ -86,11 +75,15 @@ export const SidebarLinks = (): JSX.Element => {
   );
 };
 
-export const Logout = ({ onClick }: { onClick: () => {} }): JSX.Element => {
+export const Logout = (): JSX.Element => {
   const [active, setActive] = useState(false);
 
   const toggleActive = () => {
     setActive((prev) => !prev);
+  };
+
+  const handleClick = () => {
+    toggleActive();
   };
 
   return (
@@ -101,7 +94,7 @@ export const Logout = ({ onClick }: { onClick: () => {} }): JSX.Element => {
         transitionProps={{ duration: 0 }}
       >
         <UnstyledButton
-          onClick={onClick}
+          onClick={handleClick}
           className={`${classes.link}`}
           data-active={active || undefined}
         >

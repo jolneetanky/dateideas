@@ -49,6 +49,8 @@ const generatedDateIdeaPages: Paginated<DateIdea>[] = [
 class MockGeneratorApi {
   // returns a jobID which we then use to query the DB.
   async generate(prompt: string): Promise<ApiResponse<number>> {
+    console.log(prompt); // placed here for to bypass linting
+
     // I think in the actual implementation, we'll have to return the jobID or something as well
     // so we can request another page of generated date ideas belonging to the same jobID
     const status = "success";
@@ -65,6 +67,8 @@ class MockGeneratorApi {
   }
 
   async getPage(page: number): Promise<ApiResponse<Paginated<DateIdea>>> {
+    console.log(page); // placed here for to bypass linting
+
     const status = "success";
     const message = "";
     const error = "";

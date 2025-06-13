@@ -16,7 +16,7 @@ const InputBarStyle = {
 };
 
 const InputBar = () => {
-  const { inputValue, handleChange, handleSubmit, loading, error } =
+  const { inputValue, handleChange, handleSubmit /*loading, error*/ } =
     useInputBar();
 
   return (

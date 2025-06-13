@@ -17,4 +17,3 @@ const HamburgerButton = ({ handleClick }: { handleClick?: () => void }) => {
 };
 
 export default HamburgerButton;
-3;

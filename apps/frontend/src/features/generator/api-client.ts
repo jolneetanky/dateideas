@@ -1,7 +1,6 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { DateIdea } from "../dateidea/types";
 import { Paginated } from "../pagination/types";
-import mockDateIdeaApi from "@/api/dateidea-api";
 import mockGeneratorApi from "@/api/generator-api";
 
 class GeneratorClient extends ApiClient<DateIdea> {

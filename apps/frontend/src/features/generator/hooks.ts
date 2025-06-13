@@ -1,8 +1,6 @@
 import { initLogger } from "@/lib/logger";
 import React, { useState } from "react";
 import generatorClient from "./api-client";
-import { Paginated } from "../pagination/types";
-import { DateIdea } from "../dateidea/types";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
@@ -41,7 +39,7 @@ export const useInputBar = () => {
           data: jobId,
         } = await generatorClient.generate(prompt);
         if (generateType === "error") {
-          setError(error);
+          setError(generateError);
           setLoading(false);
           resetForm();
           return;
@@ -54,7 +52,7 @@ export const useInputBar = () => {
           data: dateIdeasPage,
         } = await generatorClient.getPage(jobId as number, 1);
         if (getPageType === "error") {
-          setError(error);
+          setError(getPageError);
           setLoading(false);
           resetForm();
           return;
@@ -65,8 +63,8 @@ export const useInputBar = () => {
         );
 
         // Set the global state `generatedDateIdeas` to the first page.
-      } catch (err: any) {
-        setError(err);
+      } catch (err) {
+        setError(err as string);
       } finally {
         setLoading(false);
         resetForm();

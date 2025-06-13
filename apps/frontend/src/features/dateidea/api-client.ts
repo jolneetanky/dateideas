@@ -1,7 +1,5 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { DateIdea } from "./types";
-import mockDateIdeaApi from "@/api/dateidea-api";
-import { Paginated } from "../pagination/types";
 
 class DateIdeaClient extends ApiClient<DateIdea> {
   // async getAll(): Promise<ApiClientResponse<DateIdea[]>> {
@@ -13,6 +11,8 @@ class DateIdeaClient extends ApiClient<DateIdea> {
   //     })
   // }
   async getById(id: string): Promise<ApiClientResponse<DateIdea>> {
+    console.log(id); // placed here to bypass linting
+
     //   const { status, message, data, error } = await mockDateIdeaApi.getById(id);
     //   return {
     //     type: status,
