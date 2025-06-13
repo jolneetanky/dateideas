@@ -1,6 +1,4 @@
-import { Pagination, Text } from "@mantine/core";
-import { usePagination } from "@mantine/hooks";
-import { Paginated, UsePaginationReturn } from "./types";
+import { Pagination } from "@mantine/core";
 
 export const PageNav = ({
   totalPages,

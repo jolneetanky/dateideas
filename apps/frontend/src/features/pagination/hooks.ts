@@ -1,12 +1,9 @@
-import { UseFetchResponse } from "@/common/types/hooks";
-import { Paginated } from "./types";
+// import { Paginated } from "./types";
 
-type usePaginatedFetchArg<T> = {
-    fetchFunction: (page: number, pageSize: number) => Promise<Paginated<T>>,
-    page: number,
-    limit: number,
-}
+// type usePaginatedFetchArg<T> = {
+//     fetchFunction: (page: number, pageSize: number) => Promise<Paginated<T>>,
+//     page: number,
+//     limit: number,
+// }
 
 // const usePaginatedFetch<T> = ({fetchFunction, page, limit}: usePaginatedFetchArg): UseFetchResponse => {
-
-// }
