@@ -122,8 +122,7 @@ const generatorSlice = createSlice({
       .addCase(generateDateIdeas.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(generateDateIdeas.fulfilled, (state, action) => {
-        const jobId = action.payload;
+      .addCase(generateDateIdeas.fulfilled, (state) => {
         state.status = "success";
       })
       .addCase(generateDateIdeas.rejected, (state) => {
