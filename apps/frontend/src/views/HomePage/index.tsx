@@ -4,9 +4,8 @@ import {
   GeneratedIdeasPageNav,
   InputBar,
 } from "@/features/generator/components";
+import { useGeneratedIdeasPageCtx } from "@/features/generator/contexts";
 import { useFetchGeneratedIdeasPage } from "@/features/generator/hooks";
-import { selectGeneratedIdeasPageNumber } from "@/features/generator/slice";
-import { useAppSelector } from "@/lib/redux/hooks";
 
 // TODO: convert to CSS module
 const HomePageStyle = {
@@ -37,7 +36,9 @@ const HomePageStyle = {
 };
 
 export default function HomePage() {
-  const page = useAppSelector(selectGeneratedIdeasPageNumber);
+  // const page = useAppSelector(selectGeneratedIdeasPageNumber);
+  const { page } = useGeneratedIdeasPageCtx();
+  // console.log("HOMEPAGE", page);
   // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
   // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
   // ensuring that `data`, `loading`, `error` changes when `page` changes.

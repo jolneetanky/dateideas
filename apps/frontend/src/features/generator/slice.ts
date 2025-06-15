@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { DateIdea } from "../dateidea/types";
 import { Paginated } from "../pagination/types";
 import generatorClient from "./api-client";
@@ -8,7 +8,7 @@ import { RootState } from "@/lib/redux/store";
 interface GeneratedIdeasState {
   jobId: string; // current jobID we're displaying
   generatedIdeasPage: Paginated<DateIdea>;
-  pageNumber: number;
+  // pageNumber: number;
   status: "idle" | "success" | "error" | "loading";
 }
 
@@ -22,7 +22,7 @@ const initialState: GeneratedIdeasState = {
     totalPages: 0,
     data: [],
   },
-  pageNumber: 0,
+  // pageNumber: 0,
   status: "idle",
 };
 
@@ -46,6 +46,7 @@ export const generateDateIdeas = createAsyncThunk<
     { rejectWithValue }
   ) => {
     const { type, data: jobId, error } = await generatorClient.generate(prompt);
+    console.log("[generator.slice.generateDateIdeas]", prompt, jobId);
     if (type === "success") {
       return jobId as string;
     } else {
@@ -75,11 +76,13 @@ export const getGeneratedIdeasPage = createAsyncThunk<
     },
     { getState, rejectWithValue }
   ) => {
+    console.log("[generator.slice.getGeneratedIdeasPage]", page);
     const state = getState() as RootState; // Gets the entire Redux state
     const jobId = state.generator.jobId;
-    const curPage = state.generator.pageNumber;
+    const curPage = state.generator.generatedIdeasPage.pageNumber;
+    console.log("[generator.slice.getGeneratedIdeasPage]", curPage, jobId);
 
-    // If no page change, no need for API call
+    // no need to refetch if curpage alr this.
     if (curPage == page) {
       return state.generator.generatedIdeasPage;
     }
@@ -89,6 +92,7 @@ export const getGeneratedIdeasPage = createAsyncThunk<
       data: dateIdeasPage,
       error,
     } = await generatorClient.getPage(jobId, page);
+    console.log("[generator.slice.getGeneratedIdeasPage] PAGE", dateIdeasPage);
     if (type === "success") {
       return dateIdeasPage as Paginated<DateIdea>;
     } else {
@@ -103,9 +107,9 @@ const generatorSlice = createSlice({
   initialState,
   reducers: {
     // generates ACTION CREATORS with the corresponding names
-    generatedIdeasPageChanged(state, action: PayloadAction<number>) {
-      state.pageNumber = action.payload;
-    },
+    // generatedIdeasPageChanged(state, action: PayloadAction<number>) {
+    //   state.pageNumber = action.payload;
+    // },
   },
   extraReducers: (builder) => {
     builder
@@ -137,12 +141,9 @@ const generatorSlice = createSlice({
 });
 
 // Export ACTION CREATORS
-export const { generatedIdeasPageChanged } = generatorSlice.actions;
 // Export REDUCERS
 export const generatorReducer = generatorSlice.reducer;
 // Export SELECTORS
 export const selectJobId = (state: RootState) => state.generator.jobId;
 export const selectGeneratedIdeasPage = (state: RootState) =>
   state.generator.generatedIdeasPage;
-export const selectGeneratedIdeasPageNumber = (state: RootState) =>
-  state.generator.pageNumber;

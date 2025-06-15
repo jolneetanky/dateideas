@@ -2,20 +2,18 @@ import { initLogger } from "@/lib/logger";
 import React, { useCallback, useEffect, useState } from "react";
 // import generatorClient from "./api-client";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  generateDateIdeas,
-  generatedIdeasPageChanged,
-  getGeneratedIdeasPage,
-} from "./slice";
+import { generateDateIdeas, getGeneratedIdeasPage } from "./slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
+import { useGeneratedIdeasPageCtx } from "./contexts";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { changePage } = useGeneratedIdeasPageCtx();
 
   // dispatch
   const dispatch = useAppDispatch();
@@ -47,71 +45,17 @@ export const useInputBar = () => {
         // with either the `action.payload` value from a `fulfilled` action
         // or throw an error if it's the `rejected` action.
         await dispatch(generateDateIdeas({ prompt: prompt })).unwrap();
+        changePage(1);
       } catch (err) {
         setError(err as string);
         setLoading(false);
         resetForm();
         return;
-      }
-
-      // get first page
-      try {
-        dispatch(generatedIdeasPageChanged(1)); // set page to 1
-      } catch (err) {
-        setError(err as string);
       } finally {
         setLoading(false);
         resetForm();
       }
     };
-
-    // const generateIdeas = async () => {
-    //   // TODO: refactor to use React Query
-    //   setLoading(true);
-    //   const prompt = inputValue;
-
-    //   try {
-    //     // Send the prompt for generation, and get the job ID.
-    //     const {
-    //       type: generateType,
-    //       error: generateError,
-    //       data: jobId,
-    //     } = await generatorClient.generate(prompt);
-    //     if (generateType === "error") {
-    //       setError(generateError);
-    //       setLoading(false);
-    //       resetForm();
-    //       return;
-    //     }
-
-    //     // Using the job ID, request for the first page.
-    //     const {
-    //       type: getPageType,
-    //       error: getPageError,
-    //       data: dateIdeasPage,
-    //     } = await generatorClient.getPage(jobId as string, 1);
-    //     if (getPageType === "error") {
-    //       setError(getPageError);
-    //       setLoading(false);
-    //       resetForm();
-    //       return;
-    //     }
-
-    //     // TODO: set global state of `jobId`
-    //     // TODO: set global state of `curPage`
-    //     // TODO: set global state of `generatedDateIdeasPage`
-    //     log.info(
-    //       `[generator.hooks.useInputBar.handleSubmit]: First page, ${dateIdeasPage}`
-    //     );
-
-    //     // Set the global state `generatedDateIdeas` to the first page.
-    //   } catch (err) {
-    //     setError(err as string);
-    //   } finally {
-    //     setLoading(false);
-    //     resetForm();
-    //   }
-    // };
 
     generateIdeas();
   };
@@ -126,8 +70,9 @@ export const useFetchGeneratedIdeasPage = (
   const [data, setData] = useState<Paginated<DateIdea> | null>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // automatically refetches page when the page context changes.
 
-  log.info("Fetching page...");
+  log.info(`Fetching page ${page}`);
 
   // DISPATCH
   const dispatch = useAppDispatch();
@@ -141,6 +86,7 @@ export const useFetchGeneratedIdeasPage = (
         getGeneratedIdeasPage({ page: page })
       ).unwrap();
       setData(res);
+      console.log("RES", res);
     } catch (err) {
       setError(err as string);
     } finally {
@@ -151,6 +97,26 @@ export const useFetchGeneratedIdeasPage = (
   useEffect(() => {
     fetchPage();
   }, [fetchPage]);
+
+  // const fetchPage = async () => {
+  //   setLoading(true);
+
+  //   try {
+  //     const res = await dispatch(
+  //       getGeneratedIdeasPage({ page: page })
+  //     ).unwrap();
+  //     setData(res);
+  //     console.log("RES", res);
+  //   } catch (err) {
+  //     setError(err as string);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchPage();
+  // }, [page]);
 
   return {
     data: data as Paginated<DateIdea> | null,

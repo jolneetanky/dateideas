@@ -23,6 +23,7 @@ class GeneratorClient extends ApiClient<DateIdea> {
     jobId: string,
     page: number
   ): Promise<ApiClientResponse<Paginated<DateIdea>>> {
+    console.log("[generator.apiClient.getPage]");
     const { data, status, error } = await mockGeneratorApi.getPage(jobId, page);
 
     return {
