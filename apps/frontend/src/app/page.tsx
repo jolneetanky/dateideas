@@ -1,17 +1,7 @@
-import {
-  GeneratedIdeasPageProvider,
-  JobIdProvider,
-} from "@/features/generator/contexts";
 import HomePage from "@/views/HomePage";
 
 export default function Home() {
-  return (
-    <GeneratedIdeasPageProvider>
-      <JobIdProvider>
-        <HomePage />;
-      </JobIdProvider>
-    </GeneratedIdeasPageProvider>
-  );
+  return <HomePage />;
 }
 
 // import Image from "next/image";

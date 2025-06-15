@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { DateIdea } from "../dateidea/types";
 import { Paginated } from "../pagination/types";
 import generatorClient from "./api-client";
@@ -7,6 +7,8 @@ import { initLogger } from "@/lib/logger";
 
 // STATE INTERFACE
 interface GeneratedIdeasState {
+  jobId: string;
+  pageNumber: number;
   generatedIdeasPage: Paginated<DateIdea>;
   // pageNumber: number;
   status: "idle" | "success" | "error" | "loading";
@@ -14,6 +16,8 @@ interface GeneratedIdeasState {
 
 // INITIAL STATE
 const initialState: GeneratedIdeasState = {
+  jobId: "",
+  pageNumber: 0,
   generatedIdeasPage: {
     pageNumber: 0,
     pageSize: 0,
@@ -112,9 +116,12 @@ const generatorSlice = createSlice({
   initialState,
   reducers: {
     // generates ACTION CREATORS with the corresponding names
-    // generatedIdeasPageChanged(state, action: PayloadAction<number>) {
-    //   state.pageNumber = action.payload;
-    // },
+    generatedIdeasPageNumberChanged(state, action: PayloadAction<number>) {
+      state.pageNumber = action.payload;
+    },
+    jobIdChanged(state, action: PayloadAction<string>) {
+      state.jobId = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -124,6 +131,7 @@ const generatorSlice = createSlice({
       })
       .addCase(generateDateIdeas.fulfilled, (state) => {
         state.status = "success";
+        // state.jobId = action.payload;
       })
       .addCase(generateDateIdeas.rejected, (state) => {
         state.status = "error";
@@ -144,8 +152,13 @@ const generatorSlice = createSlice({
 });
 
 // Export ACTION CREATORS
+export const { generatedIdeasPageNumberChanged, jobIdChanged } =
+  generatorSlice.actions;
 // Export REDUCERS
 export const generatorReducer = generatorSlice.reducer;
 // Export SELECTORS
+export const selectGeneratedIdeasPageNumber = (state: RootState) =>
+  state.generator.pageNumber;
+export const selectJobId = (state: RootState) => state.generator.jobId;
 export const selectGeneratedIdeasPage = (state: RootState) =>
   state.generator.generatedIdeasPage;

@@ -4,17 +4,17 @@ import {
   GeneratedIdeasPageNav,
   InputBar,
 } from "@/features/generator/components";
-import {
-  useGeneratedIdeasPageCtx,
-  useJobIdCtx,
-} from "@/features/generator/contexts";
 import { useFetchGeneratedIdeasPage } from "@/features/generator/hooks";
+import {
+  selectGeneratedIdeasPageNumber,
+  selectJobId,
+} from "@/features/generator/slice";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 // TODO: convert to CSS module
 const HomePageStyle = {
   container: {
     display: "flex",
-    // flexDirection: "column" as "column", // placed here so ts doesn't scream
     height: "100vh",
     width: "100%",
   },
@@ -28,7 +28,6 @@ const HomePageStyle = {
     justifyContent: "center",
   },
   pageNavWrapper: {
-    // position: "fixed" as "fixed", // placed here so ts doesn't scream
     bottom: "1rem",
     width: "100%",
     display: "flex",
@@ -39,18 +38,20 @@ const HomePageStyle = {
 };
 
 export default function HomePage() {
-  // const page = useAppSelector(selectGeneratedIdeasPageNumber);
-  const { page } = useGeneratedIdeasPageCtx();
-  const { jobId } = useJobIdCtx();
+  // const { page } = useGeneratedIdeasPageCtx();
+  const jobId = useAppSelector(selectJobId);
+  const page = useAppSelector(selectGeneratedIdeasPageNumber);
   // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
   // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
   // ensuring that `data`, `loading`, `error` changes when `page` changes.
   const {
     data: generatedIdeasPage,
     loading,
-    // error,
+    error,
   } = useFetchGeneratedIdeasPage(page, jobId);
   const dateideas = generatedIdeasPage?.data;
+
+  console.log("ERROR", error);
 
   return (
     <div style={HomePageStyle.container} className="flex-col">
