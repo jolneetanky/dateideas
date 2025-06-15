@@ -1,13 +1,24 @@
 import { initLogger } from "@/lib/logger";
-import React, { useState } from "react";
-import generatorClient from "./api-client";
+import React, { useCallback, useEffect, useState } from "react";
+// import generatorClient from "./api-client";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { generateDateIdeas, getGeneratedIdeasPage } from "./slice";
+import { UseFetchResponse } from "@/common/types/hooks";
+import { Paginated } from "../pagination/types";
+import { DateIdea } from "../dateidea/types";
+import { useGeneratedIdeasPageCtx } from "./contexts";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { changePage } = useGeneratedIdeasPageCtx();
 
+  // dispatch
+  const dispatch = useAppDispatch();
+
+  // HANDLERS
   const resetForm = () => {
     setInputValue("");
   };
@@ -23,48 +34,23 @@ export const useInputBar = () => {
       `[generator.hooks.useInputBar.handleSubmit] Submitting... ${inputValue}`
     );
 
-    // TODO: send request to /api/dateideas/generate, and await the response.
-    // await generatorClient.get(inputValue)
-    // either that or dateIdeaClient.generate(inputValue)
-    // either way works, just a matter of preference
+    // REDUX IMPL
     const generateIdeas = async () => {
       setLoading(true);
       const prompt = inputValue;
 
+      // try generating. If it fails, simply return
       try {
-        // Send the prompt for generation, and get the job ID.
-        const {
-          type: generateType,
-          error: generateError,
-          data: jobId,
-        } = await generatorClient.generate(prompt);
-        if (generateType === "error") {
-          setError(generateError);
-          setLoading(false);
-          resetForm();
-          return;
-        }
-
-        // Using the job ID, request for the first page.
-        const {
-          type: getPageType,
-          error: getPageError,
-          data: dateIdeasPage,
-        } = await generatorClient.getPage(jobId as number, 1);
-        if (getPageType === "error") {
-          setError(getPageError);
-          setLoading(false);
-          resetForm();
-          return;
-        }
-
-        log.info(
-          `[generator.hooks.useInputBar.handleSubmit]: First page, ${dateIdeasPage}`
-        );
-
-        // Set the global state `generatedDateIdeas` to the first page.
+        // unwrapping it returns a NEW Promise
+        // with either the `action.payload` value from a `fulfilled` action
+        // or throw an error if it's the `rejected` action.
+        await dispatch(generateDateIdeas({ prompt: prompt })).unwrap();
+        changePage(1);
       } catch (err) {
         setError(err as string);
+        setLoading(false);
+        resetForm();
+        return;
       } finally {
         setLoading(false);
         resetForm();
@@ -75,4 +61,66 @@ export const useInputBar = () => {
   };
 
   return { inputValue, handleChange, handleSubmit, loading, error };
+};
+
+export const useFetchGeneratedIdeasPage = (
+  page: number
+): UseFetchResponse<Paginated<DateIdea>> => {
+  const log = initLogger("[useFetchGeneratedIdeasPage");
+  const [data, setData] = useState<Paginated<DateIdea> | null>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  // automatically refetches page when the page context changes.
+
+  log.info(`Fetching page ${page}`);
+
+  // DISPATCH
+  const dispatch = useAppDispatch();
+
+  // `useCallback` makes it s.t. `fetchPage` only different when `page` or `dispatch` changes
+  const fetchPage = useCallback(async () => {
+    setLoading(true);
+
+    try {
+      const res = await dispatch(
+        getGeneratedIdeasPage({ page: page })
+      ).unwrap();
+      setData(res);
+      console.log("RES", res);
+    } catch (err) {
+      setError(err as string);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, dispatch]);
+
+  useEffect(() => {
+    fetchPage();
+  }, [fetchPage]);
+
+  // const fetchPage = async () => {
+  //   setLoading(true);
+
+  //   try {
+  //     const res = await dispatch(
+  //       getGeneratedIdeasPage({ page: page })
+  //     ).unwrap();
+  //     setData(res);
+  //     console.log("RES", res);
+  //   } catch (err) {
+  //     setError(err as string);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchPage();
+  // }, [page]);
+
+  return {
+    data: data as Paginated<DateIdea> | null,
+    loading,
+    error,
+  };
 };

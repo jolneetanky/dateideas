@@ -7,6 +7,8 @@
 
 import { Button, TextInput } from "@mantine/core";
 import { useInputBar } from "./hooks";
+import { PageNav } from "../pagination/components";
+import { useGeneratedIdeasPageCtx } from "./contexts";
 
 const InputBarStyle = {
   container: {
@@ -15,7 +17,7 @@ const InputBarStyle = {
   },
 };
 
-const InputBar = () => {
+export const InputBar = () => {
   const { inputValue, handleChange, handleSubmit /*loading, error*/ } =
     useInputBar();
 
@@ -33,4 +35,12 @@ const InputBar = () => {
   );
 };
 
-export default InputBar;
+export const GeneratedIdeasPageNav = () => {
+  const { changePage } = useGeneratedIdeasPageCtx();
+
+  const handlePageChange = (page: number) => {
+    changePage(page);
+  };
+
+  return <PageNav totalPages={5} handlePageChange={handlePageChange} />;
+};

@@ -2,17 +2,17 @@ import { Pagination } from "@mantine/core";
 
 export const PageNav = ({
   totalPages,
-  setPage,
+  handlePageChange,
 }: {
   totalPages: number;
-  setPage: (prev: number) => void;
+  handlePageChange: (page: number) => void;
   // pagination: UsePaginationReturn;
 }) => {
   return (
     <>
       <Pagination
         // onChange={pagination.setPage}
-        onChange={setPage}
+        onChange={handlePageChange}
         total={totalPages}
         autoContrast
         color="lime.4"

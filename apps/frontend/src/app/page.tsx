@@ -1,7 +1,12 @@
+import { GeneratedIdeasPageProvider } from "@/features/generator/contexts";
 import HomePage from "@/views/HomePage";
 
 export default function Home() {
-  return <HomePage />;
+  return (
+    <GeneratedIdeasPageProvider>
+      <HomePage />;
+    </GeneratedIdeasPageProvider>
+  );
 }
 
 // import Image from "next/image";
