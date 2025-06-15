@@ -75,9 +75,9 @@ export const getGeneratedIdeasPage = createAsyncThunk<
     },
     { getState, rejectWithValue }
   ) => {
-    const state: RootState = getState(); // Gets the entire Redux state
+    const state = getState() as RootState; // Gets the entire Redux state
     const jobId = state.generator.jobId;
-    const curPage = state.generator.page;
+    const curPage = state.generator.pageNumber;
 
     // If no page change, no need for API call
     if (curPage == page) {

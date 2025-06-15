@@ -37,7 +37,6 @@ export const InputBar = () => {
 };
 
 export const GeneratedIdeasPageNav = () => {
-  // when i toggle the page, my pages should update accordingly.
   const dispatch = useAppDispatch();
 
   const handlePageChange = (page: number) => {

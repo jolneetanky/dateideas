@@ -1,12 +1,11 @@
 import { initLogger } from "@/lib/logger";
-import React, { useEffect, useState } from "react";
-import generatorClient from "./api-client";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import React, { useCallback, useEffect, useState } from "react";
+// import generatorClient from "./api-client";
+import { useAppDispatch } from "@/lib/redux/hooks";
 import {
   generateDateIdeas,
   generatedIdeasPageChanged,
   getGeneratedIdeasPage,
-  selectGeneratedIdeasPage,
 } from "./slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
@@ -58,7 +57,6 @@ export const useInputBar = () => {
       // get first page
       try {
         dispatch(generatedIdeasPageChanged(1)); // set page to 1
-        // await dispatch(getGeneratedIdeasPage({ page: 2 })).unwrap();
       } catch (err) {
         setError(err as string);
       } finally {
@@ -124,17 +122,18 @@ export const useInputBar = () => {
 export const useFetchGeneratedIdeasPage = (
   page: number
 ): UseFetchResponse<Paginated<DateIdea>> => {
+  const log = initLogger("[useFetchGeneratedIdeasPage");
   const [data, setData] = useState<Paginated<DateIdea> | null>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // GLOBAL STATES
-  const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
+  log.info("Fetching page...");
 
   // DISPATCH
   const dispatch = useAppDispatch();
 
-  const fetchPage = async () => {
+  // `useCallback` makes it s.t. `fetchPage` only different when `page` or `dispatch` changes
+  const fetchPage = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -147,11 +146,11 @@ export const useFetchGeneratedIdeasPage = (
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, dispatch]);
 
   useEffect(() => {
     fetchPage();
-  }, [page]);
+  }, [fetchPage]);
 
   return {
     data: data as Paginated<DateIdea> | null,

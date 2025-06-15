@@ -1,17 +1,6 @@
 "use client";
 import { DateIdea } from "./types";
-import { useState } from "react";
-import {
-  Input,
-  CloseButton,
-  Button,
-  List,
-  Card,
-  Image,
-  Text,
-  Badge,
-  Group,
-} from "@mantine/core";
+import { List } from "@mantine/core";
 
 const DateIdeaCard = ({ dateidea }: { dateidea: DateIdea }) => {
   return (

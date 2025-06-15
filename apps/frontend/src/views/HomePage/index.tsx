@@ -5,37 +5,46 @@ import {
   InputBar,
 } from "@/features/generator/components";
 import { useFetchGeneratedIdeasPage } from "@/features/generator/hooks";
-import {
-  selectGeneratedIdeasPage,
-  selectGeneratedIdeasPageNumber,
-} from "@/features/generator/slice";
-import { PageNav } from "@/features/pagination/components";
+import { selectGeneratedIdeasPageNumber } from "@/features/generator/slice";
 import { useAppSelector } from "@/lib/redux/hooks";
 
 // TODO: convert to CSS module
 const HomePageStyle = {
   container: {
     display: "flex",
-    // flexDirection: "column",
+    // flexDirection: "column" as "column", // placed here so ts doesn't scream
     height: "100vh",
     width: "100%",
   },
+  dateIdeaListWrapper: {
+    height: "65%",
+  },
   inputBarWrapper: {
-    height: "35%",
+    height: "25%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
   },
+  pageNavWrapper: {
+    // position: "fixed" as "fixed", // placed here so ts doesn't scream
+    bottom: "1rem",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
+  },
 };
 
 export default function HomePage() {
-  // NEED: page
   const page = useAppSelector(selectGeneratedIdeasPageNumber);
   // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
+  // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
+  // ensuring that `data`, `loading`, `error` changes when `page` changes.
   const {
     data: generatedIdeasPage,
     loading,
-    error,
+    // error,
   } = useFetchGeneratedIdeasPage(page);
   const dateideas = generatedIdeasPage?.data;
 
@@ -44,9 +53,13 @@ export default function HomePage() {
       <div style={HomePageStyle.inputBarWrapper}>
         <InputBar />
       </div>
-      <div>
-        <DateIdeaList dateideas={dateideas ?? []} />
-        <GeneratedIdeasPageNav />
+
+      <div style={HomePageStyle.dateIdeaListWrapper}>
+        {loading ? <>Loading</> : <DateIdeaList dateideas={dateideas ?? []} />}
+      </div>
+
+      <div style={HomePageStyle.pageNavWrapper} className="fixed">
+        {dateideas?.length == 0 ? <></> : <GeneratedIdeasPageNav />}
       </div>
     </div>
   );
