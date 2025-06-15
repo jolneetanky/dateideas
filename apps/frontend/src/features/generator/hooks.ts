@@ -1,19 +1,20 @@
 import { initLogger } from "@/lib/logger";
 import React, { useCallback, useEffect, useState } from "react";
-// import generatorClient from "./api-client";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { generateDateIdeas, getGeneratedIdeasPage } from "./slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
-import { useGeneratedIdeasPageCtx } from "./contexts";
+import { useGeneratedIdeasPageCtx, useJobIdCtx } from "./contexts";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
+
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { changePage } = useGeneratedIdeasPageCtx();
+  const { changeJobId } = useJobIdCtx();
 
   // dispatch
   const dispatch = useAppDispatch();
@@ -31,7 +32,7 @@ export const useInputBar = () => {
     e.preventDefault();
 
     log.info(
-      `[generator.hooks.useInputBar.handleSubmit] Submitting... ${inputValue}`
+      `[generator.hooks.useInputBar.handleSubmit] Generating... ${inputValue}`
     );
 
     // REDUX IMPL
@@ -44,8 +45,12 @@ export const useInputBar = () => {
         // unwrapping it returns a NEW Promise
         // with either the `action.payload` value from a `fulfilled` action
         // or throw an error if it's the `rejected` action.
-        await dispatch(generateDateIdeas({ prompt: prompt })).unwrap();
+        const jobId = await dispatch(
+          generateDateIdeas({ prompt: prompt })
+        ).unwrap();
+        // set `page` and `jobId` context so our `HomePage` can use it to call the `useFetchGeneratedIdeasPage` hook
         changePage(1);
+        changeJobId(jobId);
       } catch (err) {
         setError(err as string);
         setLoading(false);
@@ -64,59 +69,39 @@ export const useInputBar = () => {
 };
 
 export const useFetchGeneratedIdeasPage = (
-  page: number
+  page: number,
+  jobId: string
 ): UseFetchResponse<Paginated<DateIdea>> => {
   const log = initLogger("[useFetchGeneratedIdeasPage");
+
   const [data, setData] = useState<Paginated<DateIdea> | null>();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  // automatically refetches page when the page context changes.
 
-  log.info(`Fetching page ${page}`);
+  log.info(`Fetching page ${page} for job ID ${jobId}`);
 
   // DISPATCH
   const dispatch = useAppDispatch();
 
-  // `useCallback` makes it s.t. `fetchPage` only different when `page` or `dispatch` changes
+  // `useCallback` makes it s.t. `fetchPage` changes when `page` or `dispatch` changes
   const fetchPage = useCallback(async () => {
     setLoading(true);
 
     try {
       const res = await dispatch(
-        getGeneratedIdeasPage({ page: page })
+        getGeneratedIdeasPage({ page: page, jobId: jobId })
       ).unwrap();
       setData(res);
-      console.log("RES", res);
     } catch (err) {
       setError(err as string);
     } finally {
       setLoading(false);
     }
-  }, [page, dispatch]);
+  }, [page, jobId, dispatch]);
 
   useEffect(() => {
     fetchPage();
   }, [fetchPage]);
-
-  // const fetchPage = async () => {
-  //   setLoading(true);
-
-  //   try {
-  //     const res = await dispatch(
-  //       getGeneratedIdeasPage({ page: page })
-  //     ).unwrap();
-  //     setData(res);
-  //     console.log("RES", res);
-  //   } catch (err) {
-  //     setError(err as string);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchPage();
-  // }, [page]);
 
   return {
     data: data as Paginated<DateIdea> | null,

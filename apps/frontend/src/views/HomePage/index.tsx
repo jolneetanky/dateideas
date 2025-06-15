@@ -4,7 +4,10 @@ import {
   GeneratedIdeasPageNav,
   InputBar,
 } from "@/features/generator/components";
-import { useGeneratedIdeasPageCtx } from "@/features/generator/contexts";
+import {
+  useGeneratedIdeasPageCtx,
+  useJobIdCtx,
+} from "@/features/generator/contexts";
 import { useFetchGeneratedIdeasPage } from "@/features/generator/hooks";
 
 // TODO: convert to CSS module
@@ -38,7 +41,7 @@ const HomePageStyle = {
 export default function HomePage() {
   // const page = useAppSelector(selectGeneratedIdeasPageNumber);
   const { page } = useGeneratedIdeasPageCtx();
-  // console.log("HOMEPAGE", page);
+  const { jobId } = useJobIdCtx();
   // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
   // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
   // ensuring that `data`, `loading`, `error` changes when `page` changes.
@@ -46,7 +49,7 @@ export default function HomePage() {
     data: generatedIdeasPage,
     loading,
     // error,
-  } = useFetchGeneratedIdeasPage(page);
+  } = useFetchGeneratedIdeasPage(page, jobId);
   const dateideas = generatedIdeasPage?.data;
 
   return (

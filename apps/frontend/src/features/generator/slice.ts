@@ -3,10 +3,10 @@ import { DateIdea } from "../dateidea/types";
 import { Paginated } from "../pagination/types";
 import generatorClient from "./api-client";
 import { RootState } from "@/lib/redux/store";
+import { initLogger } from "@/lib/logger";
 
 // STATE INTERFACE
 interface GeneratedIdeasState {
-  jobId: string; // current jobID we're displaying
   generatedIdeasPage: Paginated<DateIdea>;
   // pageNumber: number;
   status: "idle" | "success" | "error" | "loading";
@@ -14,7 +14,6 @@ interface GeneratedIdeasState {
 
 // INITIAL STATE
 const initialState: GeneratedIdeasState = {
-  jobId: "",
   generatedIdeasPage: {
     pageNumber: 0,
     pageSize: 0,
@@ -60,7 +59,9 @@ export const generateDateIdeas = createAsyncThunk<
 export const getGeneratedIdeasPage = createAsyncThunk<
   Paginated<DateIdea>, // Payload type of `fulfilled` action,
   {
+    // Argument typess
     page: number;
+    jobId: string;
   },
   {
     rejectValue: string;
@@ -71,14 +72,18 @@ export const getGeneratedIdeasPage = createAsyncThunk<
   async (
     {
       page,
+      jobId,
     }: {
       page: number;
+      jobId: string;
     },
     { getState, rejectWithValue }
   ) => {
+    const log = initLogger("[generator.slice.getGeneratedIdeasPage]");
+    log.info(`Fetching page ${page} for job ID ${jobId}`);
     console.log("[generator.slice.getGeneratedIdeasPage]", page);
     const state = getState() as RootState; // Gets the entire Redux state
-    const jobId = state.generator.jobId;
+    // const jobId = state.generator.jobId;
     const curPage = state.generator.generatedIdeasPage.pageNumber;
     console.log("[generator.slice.getGeneratedIdeasPage]", curPage, jobId);
 
@@ -117,10 +122,8 @@ const generatorSlice = createSlice({
       .addCase(generateDateIdeas.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(generateDateIdeas.fulfilled, (state, action) => {
-        const jobId = action.payload;
+      .addCase(generateDateIdeas.fulfilled, (state) => {
         state.status = "success";
-        state.jobId = jobId;
       })
       .addCase(generateDateIdeas.rejected, (state) => {
         state.status = "error";
@@ -144,6 +147,5 @@ const generatorSlice = createSlice({
 // Export REDUCERS
 export const generatorReducer = generatorSlice.reducer;
 // Export SELECTORS
-export const selectJobId = (state: RootState) => state.generator.jobId;
 export const selectGeneratedIdeasPage = (state: RootState) =>
   state.generator.generatedIdeasPage;
