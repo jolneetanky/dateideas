@@ -1,10 +1,15 @@
-import { GeneratedIdeasPageProvider } from "@/features/generator/contexts";
+import {
+  GeneratedIdeasPageProvider,
+  JobIdProvider,
+} from "@/features/generator/contexts";
 import HomePage from "@/views/HomePage";
 
 export default function Home() {
   return (
     <GeneratedIdeasPageProvider>
-      <HomePage />;
+      <JobIdProvider>
+        <HomePage />;
+      </JobIdProvider>
     </GeneratedIdeasPageProvider>
   );
 }
