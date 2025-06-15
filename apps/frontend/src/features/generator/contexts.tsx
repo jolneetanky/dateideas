@@ -82,6 +82,6 @@ const useJobIdCtx = () => {
 export {
   useGeneratedIdeasPageCtx,
   GeneratedIdeasPageProvider,
-  useJobIdCtx,
-  JobIdProvider,
+  //   useJobIdCtx,
+  //   JobIdProvider,
 };

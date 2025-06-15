@@ -1,11 +1,15 @@
 import { initLogger } from "@/lib/logger";
 import React, { useCallback, useEffect, useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { generateDateIdeas, getGeneratedIdeasPage } from "./slice";
+import {
+  generateDateIdeas,
+  generatedIdeasPageNumberChanged,
+  getGeneratedIdeasPage,
+  jobIdChanged,
+} from "./slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
-import { useGeneratedIdeasPageCtx, useJobIdCtx } from "./contexts";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
@@ -13,8 +17,6 @@ export const useInputBar = () => {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { changePage } = useGeneratedIdeasPageCtx();
-  const { changeJobId } = useJobIdCtx();
 
   // dispatch
   const dispatch = useAppDispatch();
@@ -45,12 +47,15 @@ export const useInputBar = () => {
         // unwrapping it returns a NEW Promise
         // with either the `action.payload` value from a `fulfilled` action
         // or throw an error if it's the `rejected` action.
+        // TODO: replace with useQuery.
         const jobId = await dispatch(
           generateDateIdeas({ prompt: prompt })
         ).unwrap();
         // set `page` and `jobId` context so our `HomePage` can use it to call the `useFetchGeneratedIdeasPage` hook
-        changePage(1);
-        changeJobId(jobId);
+        // changePage(1);
+        dispatch(generatedIdeasPageNumberChanged(1));
+        dispatch(jobIdChanged(jobId));
+        // changeJobId(jobId);
       } catch (err) {
         setError(err as string);
         setLoading(false);
