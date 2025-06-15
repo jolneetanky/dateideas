@@ -10,6 +10,8 @@ import {
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
+// import { useQuery } from "@tanstack/react-query";
+// import generatorClient from "./api-client";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
@@ -17,6 +19,17 @@ export const useInputBar = () => {
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // const {
+  //   data: jobId,
+  //   isLoading: loading,
+  //   error,
+  // } = useQuery({
+  //   queryKey: ["generatedIdeas"],
+  //   queryFn: async () => {
+  //     const res = await generatorClient.generate(inputValue);
+  //     return res.data;
+  //   },
+  // });
 
   // dispatch
   const dispatch = useAppDispatch();
@@ -47,7 +60,8 @@ export const useInputBar = () => {
         // unwrapping it returns a NEW Promise
         // with either the `action.payload` value from a `fulfilled` action
         // or throw an error if it's the `rejected` action.
-        // TODO: replace with useQuery.
+
+        // TODO: replace with useQuery. Or just use our client directly.
         const jobId = await dispatch(
           generateDateIdeas({ prompt: prompt })
         ).unwrap();
