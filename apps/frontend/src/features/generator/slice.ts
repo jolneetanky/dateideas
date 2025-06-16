@@ -122,6 +122,18 @@ const generatorSlice = createSlice({
     jobIdChanged(state, action: PayloadAction<string>) {
       state.jobId = action.payload;
     },
+    generatedIdeasPageFetched(
+      state,
+      action: PayloadAction<Paginated<DateIdea>>
+    ) {
+      state.generatedIdeasPage = action.payload;
+    },
+    generatedIdeasStatusChanged(
+      state,
+      action: PayloadAction<"idle" | "success" | "error" | "loading">
+    ) {
+      state.status = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -152,8 +164,12 @@ const generatorSlice = createSlice({
 });
 
 // Export ACTION CREATORS
-export const { generatedIdeasPageNumberChanged, jobIdChanged } =
-  generatorSlice.actions;
+export const {
+  generatedIdeasPageNumberChanged,
+  jobIdChanged,
+  generatedIdeasPageFetched,
+  generatedIdeasStatusChanged,
+} = generatorSlice.actions;
 // Export REDUCERS
 export const generatorReducer = generatorSlice.reducer;
 // Export SELECTORS
@@ -162,3 +178,5 @@ export const selectGeneratedIdeasPageNumber = (state: RootState) =>
 export const selectJobId = (state: RootState) => state.generator.jobId;
 export const selectGeneratedIdeasPage = (state: RootState) =>
   state.generator.generatedIdeasPage;
+export const selectGeneratedIdeasStatus = (state: RootState) =>
+  state.generator.status;

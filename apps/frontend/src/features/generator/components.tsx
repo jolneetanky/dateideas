@@ -6,10 +6,12 @@
 // 2) when user clicks "generate", we send all that into to some mock API.
 
 import { Button, TextInput } from "@mantine/core";
-import { useInputBar } from "./hooks";
 import { PageNav } from "../pagination/components";
-import { useAppDispatch } from "@/lib/redux/hooks";
-import { generatedIdeasPageNumberChanged } from "./slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import {
+  generatedIdeasPageNumberChanged,
+  selectGeneratedIdeasPageNumber,
+} from "./slice";
 
 const InputBarStyle = {
   container: {
@@ -18,10 +20,15 @@ const InputBarStyle = {
   },
 };
 
-export const InputBar = () => {
-  const { inputValue, handleChange, handleSubmit /*loading, error*/ } =
-    useInputBar();
-
+export const InputBar = ({
+  inputValue,
+  handleChange,
+  handleSubmit,
+}: {
+  inputValue: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+}) => {
   return (
     <form style={InputBarStyle.container} onSubmit={handleSubmit}>
       <TextInput
@@ -38,10 +45,17 @@ export const InputBar = () => {
 
 export const GeneratedIdeasPageNav = () => {
   const dispatch = useAppDispatch();
+  const curPage = useAppSelector(selectGeneratedIdeasPageNumber);
 
   const handlePageChange = (page: number) => {
     dispatch(generatedIdeasPageNumberChanged(page));
   };
 
-  return <PageNav totalPages={5} handlePageChange={handlePageChange} />;
+  return (
+    <PageNav
+      totalPages={5}
+      handlePageChange={handlePageChange}
+      curPage={curPage}
+    />
+  );
 };
