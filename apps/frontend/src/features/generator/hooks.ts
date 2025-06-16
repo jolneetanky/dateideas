@@ -1,47 +1,60 @@
 import { initLogger } from "@/lib/logger";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import {
-  generateDateIdeas,
   generatedIdeasPageNumberChanged,
-  getGeneratedIdeasPage,
+  generatedIdeasStatusChanged,
   jobIdChanged,
 } from "./slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
-// import { useQuery } from "@tanstack/react-query";
-// import generatorClient from "./api-client";
+import generatorClient from "./api-client";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
 
   const [inputValue, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  // const {
-  //   data: jobId,
-  //   isLoading: loading,
-  //   error,
-  // } = useQuery({
-  //   queryKey: ["generatedIdeas"],
-  //   queryFn: async () => {
-  //     const res = await generatorClient.generate(inputValue);
-  //     return res.data;
-  //   },
-  // });
 
   // dispatch
   const dispatch = useAppDispatch();
 
-  // HANDLERS
-  const resetForm = () => {
-    setInputValue("");
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
+
+  // MUTATE
+  const {
+    mutate: generateIdeas,
+    isPending,
+    isError,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: async () => {
+      const {
+        type,
+        data: jobId,
+        error,
+      } = await generatorClient.generate(inputValue);
+
+      if (type === "error" || !jobId) {
+        throw new Error(error); // i think this causes `isError` to be true?
+      }
+      return jobId;
+    },
+    onSuccess: (jobId) => {
+      dispatch(generatedIdeasPageNumberChanged(1));
+      dispatch(jobIdChanged(jobId));
+      dispatch(generatedIdeasStatusChanged("success"));
+      log.info(`Successfully generated date ideas, jobID: ${jobId}`);
+    },
+    onError: (err) => {
+      dispatch(generatedIdeasStatusChanged("error"));
+      log.error(`Failed to generate date ideas, error: ${err}`);
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,41 +63,18 @@ export const useInputBar = () => {
       `[generator.hooks.useInputBar.handleSubmit] Generating... ${inputValue}`
     );
 
-    // REDUX IMPL
-    const generateIdeas = async () => {
-      setLoading(true);
-      const prompt = inputValue;
-
-      // try generating. If it fails, simply return
-      try {
-        // unwrapping it returns a NEW Promise
-        // with either the `action.payload` value from a `fulfilled` action
-        // or throw an error if it's the `rejected` action.
-
-        // TODO: replace with useQuery. Or just use our client directly.
-        const jobId = await dispatch(
-          generateDateIdeas({ prompt: prompt })
-        ).unwrap();
-        // set `page` and `jobId` context so our `HomePage` can use it to call the `useFetchGeneratedIdeasPage` hook
-        // changePage(1);
-        dispatch(generatedIdeasPageNumberChanged(1));
-        dispatch(jobIdChanged(jobId));
-        // changeJobId(jobId);
-      } catch (err) {
-        setError(err as string);
-        setLoading(false);
-        resetForm();
-        return;
-      } finally {
-        setLoading(false);
-        resetForm();
-      }
-    };
-
     generateIdeas();
   };
 
-  return { inputValue, handleChange, handleSubmit, loading, error };
+  return {
+    inputValue,
+    handleChange,
+    handleSubmit,
+    isPending,
+    isError,
+    isSuccess,
+    error: error?.message ?? "",
+  };
 };
 
 export const useFetchGeneratedIdeasPage = (
@@ -93,38 +83,16 @@ export const useFetchGeneratedIdeasPage = (
 ): UseFetchResponse<Paginated<DateIdea>> => {
   const log = initLogger("[useFetchGeneratedIdeasPage");
 
-  const [data, setData] = useState<Paginated<DateIdea> | null>();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
   log.info(`Fetching page ${page} for job ID ${jobId}`);
 
-  // DISPATCH
-  const dispatch = useAppDispatch();
-
-  // `useCallback` makes it s.t. `fetchPage` changes when `page` or `dispatch` changes
-  const fetchPage = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      const res = await dispatch(
-        getGeneratedIdeasPage({ page: page, jobId: jobId })
-      ).unwrap();
-      setData(res);
-    } catch (err) {
-      setError(err as string);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, jobId, dispatch]);
-
-  useEffect(() => {
-    fetchPage();
-  }, [fetchPage]);
+  const { data: generatorClientResponse, isLoading: loading } = useQuery({
+    queryKey: [page, jobId],
+    queryFn: async () => await generatorClient.getPage(jobId, page),
+  });
 
   return {
-    data: data as Paginated<DateIdea> | null,
+    data: generatorClientResponse?.data ?? null,
     loading,
-    error,
+    error: generatorClientResponse?.error ?? "",
   };
 };

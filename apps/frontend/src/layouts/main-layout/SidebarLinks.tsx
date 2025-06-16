@@ -12,19 +12,27 @@ import {
 import { Stack, Tooltip, UnstyledButton } from "@mantine/core";
 import classes from "./styles/SidebarLinks.module.css";
 import { useIsSidebarOpenCtx } from "./contexts/IsSidebarOpenContext";
+import Link from "next/link";
 
 interface NavbarLinkProps {
   icon: typeof IconHome2;
   label: string;
   active?: boolean;
   onClick?: () => void;
+  href?: string;
 }
 
-function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
+function NavbarLink({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  href,
+}: NavbarLinkProps) {
   const { isSidebarOpen } = useIsSidebarOpenCtx();
 
   return (
-    <div>
+    <Link href={href ?? ""}>
       <Tooltip
         label={label}
         position="right"
@@ -42,29 +50,27 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
           {isSidebarOpen && <span>{label}</span>}
         </UnstyledButton>
       </Tooltip>
-    </div>
+    </Link>
   );
 }
 
 const mockdata = [
-  { icon: IconHome2, label: "Home" },
-  // { icon: IconGauge, label: "Dashboard" },
-  // { icon: IconDeviceDesktopAnalytics, label: "Analytics" },
-  // { icon: IconCalendarStats, label: "Releases" },
+  { icon: IconHome2, label: "Home", href: "/" },
   { icon: IconUser, label: "Account" },
-  // { icon: IconFingerprint, label: "Security" },
-  { icon: IconCalendarStats, label: "Dates" },
+  { icon: IconCalendarStats, label: "Dates", href: "/dates" },
   { icon: IconSettings, label: "Settings" },
 ];
 
 export const SidebarLinks = (): JSX.Element => {
   const [active, setActive] = useState(2);
+
   const links = mockdata.map((link, index) => (
     <NavbarLink
       {...link}
       key={link.label}
       active={index === active}
       onClick={() => setActive(index)}
+      href={link.href}
     />
   ));
 
