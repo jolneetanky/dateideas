@@ -51,7 +51,6 @@ func main() {
 	time.Sleep(500 * time.Millisecond)
 
 	// Fire concurrent requests
-
 	var wg sync.WaitGroup
 	numRequests := 10
 	for i := 0; i < numRequests; i++ {
