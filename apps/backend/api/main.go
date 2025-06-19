@@ -14,6 +14,7 @@ func main() {
 	router := gin.Default()
 
 	router.POST("/generator/generate", generatorController.Generate)
+	router.GET("/generator/status/:jobId")
 
 	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
 }

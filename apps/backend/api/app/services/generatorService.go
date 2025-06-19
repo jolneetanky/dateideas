@@ -16,6 +16,7 @@ func InitGeneratorServiceImpl() GeneratorServiceImpl {
 
 // Implement methods
 func (gs GeneratorServiceImpl) Generate(prompt string) (string, error) {
+	// TODO: enqueue into job queue
 	// enqueue, and send jobId
 	mockJobId := "1"
 	return mockJobId, nil

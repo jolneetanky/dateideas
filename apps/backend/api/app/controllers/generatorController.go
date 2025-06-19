@@ -44,7 +44,6 @@ func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 
 	if bindErr != nil {
 		logger.Info(fmt.Sprintf("Error binding request: %s", bindErr.Error()))
-		c.JSON(http.StatusBadRequest, gin.H{"error": bindErr.Error()})
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
 			Message: "Failed to generate ideas",
