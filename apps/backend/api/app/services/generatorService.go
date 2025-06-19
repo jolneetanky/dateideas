@@ -2,7 +2,7 @@ package services
 
 // Define interface
 type GeneratorService interface {
-	Generate()
+	Generate(prompt string) (string, error)
 }
 
 // Define implementation struct
@@ -15,6 +15,8 @@ func InitGeneratorServiceImpl() GeneratorServiceImpl {
 }
 
 // Implement methods
-func (gs GeneratorServiceImpl) Generate() {
-
+func (gs GeneratorServiceImpl) Generate(prompt string) (string, error) {
+	// enqueue, and send jobId
+	mockJobId := "1"
+	return mockJobId, nil
 }

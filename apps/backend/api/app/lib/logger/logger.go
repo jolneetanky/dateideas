@@ -24,6 +24,14 @@ func Info(args ...interface{}) {
 	}
 }
 
+func Error(args ...interface{}) {
+	if logger.Level >= logrus.ErrorLevel {
+		entry := logger.WithFields(logrus.Fields{})
+		entry.Data["file"] = fileInfo(2)
+		entry.Error(args...)
+	}
+}
+
 func fileInfo(skip int) string {
 	_, file, line, ok := runtime.Caller(skip)
 	if !ok {

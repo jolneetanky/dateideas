@@ -13,7 +13,7 @@ func main() {
 	generatorController := factory.BuildGeneratorController()
 	router := gin.Default()
 
-	router.POST("/dateideagenerator/generate", generatorController.Generate)
+	router.POST("/generator/generate", generatorController.Generate)
 
 	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
 }
