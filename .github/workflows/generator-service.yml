@@ -1,0 +1,33 @@
+name: Generator Service Tests
+
+on:
+  push:
+    paths:
+      - 'apps/backend/api/**'
+  pull_request:
+    paths:
+      - 'apps/backend/api/**'
+
+jobs:
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./apps/backend/api
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21' # or whatever version you use
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Run tests
+        run: go test ./...
