@@ -1,41 +1,33 @@
-import pika
 import sys
 import os
-
-def callback(ch, method, properties, body):
-    print(f"RECEIVED: {body}")
-    ch.basic_ack(delivery_tag=method.delivery_tag)
+from services.worker import WorkerImpl
+from repository.job_repo import JobRepoImpl
+from lib.psycopg import initPostgresJobDB, postgresJobDB
+from lib.rabbitmq import consume_queue
 
 def main():
-    # setup connection to rabbitmq and consume
-    # pika works by having an infinite loop that keeps listening for messages.
-    connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/"))
-    channel = connection.channel()
+    # TODO: 1) setup logging, 2) debug why the vlaues aren't being inserted into DB
 
-    # Declare the queue from which to consume messages
-    # Must match the one the producer is producing to
-    channel.queue_declare(queue="job_queue", durable=True) # TODO: try durable and not durable
+    # connect to DB, initialize table if not yet initialized
+    # postgresJobDB.connect_db()
+    # postgresJobDB.setup_job_table()
+    initPostgresJobDB()
 
-    # Uncomment this to see how the behaviour changes when we limit the prefetch count to 1
-    channel.basic_qos(prefetch_count=1)
+    jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
+    worker = WorkerImpl(jobRepo)
 
-    channel.basic_consume(queue="job_queue", on_message_callback=callback, auto_ack=False) 
-    # set auto_ack to false f\for manual ack and gereater reliability
-
-    print("Waiting for messages...")
-    channel.start_consuming()
+    consume_queue(worker) # blocking
 
 if __name__ == '__main__':
     # run a never ending loop hehe
-    # try:
-    #     main()
-    # except KeyboardInterrupt:
-    #     print("Interrupted")
-    #     try:
-    #         sys.exit(0) # exit with no problems
-    #     except SystemExit:
-    #        os._exit(0) 
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Interrupted")
+        try:
+            sys.exit(0) # exit with no problems
+        except SystemExit:
+           os._exit(0) 
 
 # from urllib.parse import quote
 # from dataclasses import dataclass
