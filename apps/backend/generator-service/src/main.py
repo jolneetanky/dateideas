@@ -6,11 +6,13 @@ from lib.psycopg import initPostgresJobDB, postgresJobDB
 from lib.rabbitmq import consume_queue
 
 def main():
-    # TODO: 1) setup logging, 2) debug why the vlaues aren't being inserted into DB
+    # TODO: 1) debug why the vlaues aren't being inserted into DB
 
     # connect to DB, initialize table if not yet initialized
     # postgresJobDB.connect_db()
     # postgresJobDB.setup_job_table()
+    
+    # initializers
     initPostgresJobDB()
 
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.

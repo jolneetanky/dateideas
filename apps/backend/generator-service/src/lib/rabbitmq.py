@@ -1,3 +1,4 @@
+import uuid
 import json
 import pika
 from domain.resource.message import JobQueueConsumedMessage
@@ -5,25 +6,39 @@ from services.worker import WorkerImpl
 
 # formats message into the resource we need
 def format_message(body: bytes) -> JobQueueConsumedMessage:
-    # Decode from bytes to string
-    json_str = body.decode("utf-8")
+    # # Decode from bytes to string
+    # json_str = body.decode("utf-8")
 
-    # Parse the JSON string into a Python dictionary
-    # Like {job_id: job_id, prompt: prompt, }
-    data = json.loads(json_str)
+    # # Parse the JSON string into a Python dictionary
+    # # Like {job_id: job_id, prompt: prompt, }
+    # data = json.loads(json_str)
 
-    # Unpack dictionary into dataclass
-    # Equiv to doing `JobQueueConsumedMessage(job_id=job_id, prompt: prompt)`
-    message = JobQueueConsumedMessage(**data)
+    # # Unpack dictionary into dataclass
+    # # Equiv to doing `JobQueueConsumedMessage(job_id=job_id, prompt: prompt)`
+    # message = JobQueueConsumedMessage(**data)
 
-    return message
+    # return message
+
+    data = json.loads(body)
+    print("DATAAA", data)
+
+    return JobQueueConsumedMessage(
+        job_id=uuid.UUID(data["job_id"]),
+        prompt=data["prompt"],
+        location=data["location"],
+        budget=data["budget"],
+    )
 
 def consume_queue(worker: WorkerImpl):
     def callback(ch, method, properties, body:JobQueueConsumedMessage):
         print(f"RECEIVED: {body}")
 
         formatted_body = format_message(body)
-        worker.generate(formatted_body)
+        try:
+            worker.generate(formatted_body)
+        except Exception as e:
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+            return
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 

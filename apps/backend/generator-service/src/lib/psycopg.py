@@ -19,7 +19,6 @@ class PostgresJobDB:
     CREATE TABLE IF NOT EXISTS jobs (
                         id UUID PRIMARY KEY,
                         status TEXT NOT NULL,
-                        result TEXT
                         );
                         """)
             self.conn.commit()
@@ -33,10 +32,29 @@ class PostgresJobDB:
                 (job_id, status)
             )
             self.conn.commit()
+    
+    def reset_jobs_table(self):
+        with self.conn.cursor() as cur:
+            cur.execute("""
+                DROP TABLE IF EXISTS jobs;
+                CREATE TABLE jobs (
+                    id UUID PRIMARY KEY,
+                    status TEXT
+                );
+            """)
+            self.conn.commit()
 
- 
+    def update_job_status(self, job_id, new_status):
+        with self.conn.cursor() as cur:
+            cur.execute(
+                "UPDATE jobs SET status = %s WHERE id = %s;",
+                (new_status, job_id)
+            )
+        self.conn.commit() 
+
 postgresJobDB = PostgresJobDB() # singleton
 
 def initPostgresJobDB():
     postgresJobDB.connect_db()
-    postgresJobDB.setup_job_table()
+    # postgresJobDB.setup_job_table()
+    postgresJobDB.reset_jobs_table()

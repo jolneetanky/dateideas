@@ -1,7 +1,7 @@
-import logging
 from abc import ABC, abstractmethod
 from domain.resource.message import JobQueueConsumedMessage
 from repository.job_repo import JobRepo
+from lib.logger import initLogger
 
 # abstract class
 class Worker(ABC):
@@ -12,15 +12,27 @@ class Worker(ABC):
     def generate(self):
         pass
 
-# implementing class
 class WorkerImpl(Worker):
     def __init__(self, repo: JobRepo):
         self.repo = repo
 
     def generate(self, data: JobQueueConsumedMessage):
-        logger = logging.getLogger("[services.worker.generate]")
-        logger.info("Generating... jobId: ${data.job_id}")
-        print("GENERATING", data.prompt) 
+        logger = initLogger("worker.generate")
+        logger.info("inserting jobID into DB...")
+
         job_id = data.job_id
-        status = "Pending"
-        self.repo.insert_job("6", status) # so it does insert, just for some reason when it's not refelcted in the container
+        # self.repo.insert_job(job_id, status)
+        try:
+            self.repo.insert_job(job_id, "pending")
+        except Exception as e:
+            logger.error(f"Error inserting job into DB: {e}")
+            raise # rethrow exception after logging 
+
+        # simulate job completion
+        # generate date ideas...
+        # after geneneration, mark job id as either "success" or "error"
+        try:
+            self.repo.update_job(job_id, "success")
+        except Exception as e:
+            logger.error(f"Error updating job id as success: {e}")
+            raise # rethrow exception after logging 
