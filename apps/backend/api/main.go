@@ -14,6 +14,7 @@ func main() {
 	logger.InitLogger()
 
 	generatorController := factory.BuildGeneratorController()
+	jobController := factory.BuildJobController()
 
 	// Create new rabbitMQ connection
 	err := utils.NewRabbitMQConnection()
@@ -27,7 +28,8 @@ func main() {
 	router := gin.Default()
 
 	router.POST("/generator/generate", generatorController.Generate)
-	router.GET("/generator/status/:jobId")
+
+	router.GET("/jobs/status/:jobId", jobController.GetStatus)
 
 	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
 }

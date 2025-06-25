@@ -9,3 +9,7 @@ func BuildGeneratorController() controllers.GeneratorControllerImpl {
 	generatorService := services.InitGeneratorServiceImpl()
 	return controllers.InitGeneratorControllerImpl(generatorService)
 }
+
+func BuildJobController() controllers.JobControllerImpl {
+	return controllers.InitJobControllerImpl()
+}

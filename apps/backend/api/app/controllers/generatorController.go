@@ -25,19 +25,12 @@ func InitGeneratorControllerImpl(service services.GeneratorService) GeneratorCon
 	return GeneratorControllerImpl{service: service}
 }
 
-// var defaultFilterOptions resource.FilterOptions = resource.FilterOptions{
-// 	Location: "",
-// 	Budget:   -1,
-// }
-
 // Implement methods
 func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 	logger.Info("Formatting request...")
 	// start with default "nil" value for the request
-	// so if eg. request passes in `{"filters": {}}`, we will use `defaultFilterOptions` for the filter.
 	generateIdeasRequest := resource.GenerateIdeasRequest{
-		Prompt: "",
-		// Filters: &defaultFilterOptions,
+		Prompt:   "",
 		Location: "",
 		Budget:   -1,
 	}
@@ -55,17 +48,6 @@ func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 		return
 	}
 
-	// Fill up with default values
-	// Check if pointer to `FilterOptions` is nil
-	// if generateIdeasRequest.Filters == nil {
-	// 	// Btw this is wrong because you're dereferencing `generateIdeasRequest.Filters` which is nil...
-	// 	// *(generateIdeasRequest.Filters) = defaultFilterOptions // In Go, the shortcut would be to exclude the parentheses `*generateIdeasRequest.Filters = defaultFilterOptions`.
-	// 	// NOTE: in Go, `*generateIdeasRequest.Filters` == `*(generateIdeasRequest.Filters)`, because the `.` operator > `*` operator.
-	// 	generateIdeasRequest.Filters = &defaultFilterOptions // `(generateIdeasRequest.Filters) is a POINTER to an object of type `FilterOptions`. So what we're doing here, is make that pointer point to `defaultFilterOptions`.`
-	// 	logger.Info(fmt.Sprintf("location: %s, budget: %d", (*(generateIdeasRequest.Filters)).Location, (*generateIdeasRequest.Filters).Budget))
-	// }
-
-	// jobId, err := gc.service.Generate(generateIdeasRequest.Prompt, generateIdeasRequest.Filters.Location, generateIdeasRequest.Filters.Budget)
 	jobId, err := gc.service.Generate(generateIdeasRequest.Prompt, generateIdeasRequest.Location, generateIdeasRequest.Budget)
 
 	if err != nil {
