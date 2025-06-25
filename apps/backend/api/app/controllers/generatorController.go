@@ -80,7 +80,7 @@ func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 		logger.Info(jobId)
 		c.JSON(http.StatusOK, resource.ApiResponse[string]{
 			Status:  resource.Success,
-			Message: "Successfully generated ideas",
+			Message: "Successfully enqueued job",
 			Error:   "",
 			Data:    jobId,
 		})

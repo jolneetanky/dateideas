@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/utils"
 )
@@ -22,13 +23,6 @@ func InitGeneratorServiceImpl() GeneratorServiceImpl {
 	return GeneratorServiceImpl{}
 }
 
-type Message struct {
-	JobId    string `json:"job_id"`
-	Prompt   string `json:"prompt"`
-	Location string `json:"location"`
-	Budget   int    `json:"budget"`
-}
-
 // Implement methods
 func (gs GeneratorServiceImpl) Generate(prompt string, location string, budget int) (string, error) {
 	// what if we talk to jobDB to give us a new jobID of this guy
@@ -44,7 +38,7 @@ func (gs GeneratorServiceImpl) Generate(prompt string, location string, budget i
 	jobId := utils.GenerateJobId()
 
 	// format message
-	message := Message{
+	message := resource.Message{
 		JobId:    jobId,
 		Prompt:   prompt,
 		Location: location,
