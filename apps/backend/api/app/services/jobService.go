@@ -8,7 +8,7 @@ import (
 
 // Define interface
 type JobService interface {
-	GetStatus(jobId string) (status string, err error)
+	GetStatus(jobId uuid.UUID) (status string, err error)
 }
 
 // Define implementation struct
@@ -17,21 +17,21 @@ type JobServiceImpl struct {
 }
 
 // Constructor to initialize GeneratorServiceImpl
-func InitJobServiceImpl() JobServiceImpl {
-	return JobServiceImpl{}
+func InitJobServiceImpl(repo repositories.JobRepositoryImpl) JobServiceImpl {
+	return JobServiceImpl{repo}
 }
 
-func (js JobServiceImpl) GetStatus(jobId string) (status string, err error) {
+func (js JobServiceImpl) GetStatus(jobId uuid.UUID) (status string, err error) {
 	logger.Info("Getting status...")
-	// format to uuid
-	id, parseErr := uuid.Parse(jobId)
+	// // format to uuid
+	// id, parseErr := uuid.Parse(jobId)
 
-	if parseErr != nil {
-		return "", parseErr
-	}
+	// if parseErr != nil {
+	// 	return "", parseErr
+	// }
 
 	// pass uuid to repo layer
-	status, repoErr := js.repo.GetStatus(id)
+	status, repoErr := js.repo.GetStatus(jobId)
 
 	if repoErr != nil {
 		return "", repoErr

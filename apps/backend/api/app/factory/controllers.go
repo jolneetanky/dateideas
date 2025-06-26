@@ -2,7 +2,9 @@ package factory
 
 import (
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/controllers"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/services"
+	"gorm.io/gorm"
 )
 
 func BuildGeneratorController() controllers.GeneratorControllerImpl {
@@ -10,6 +12,12 @@ func BuildGeneratorController() controllers.GeneratorControllerImpl {
 	return controllers.InitGeneratorControllerImpl(generatorService)
 }
 
-func BuildJobController() controllers.JobControllerImpl {
-	return controllers.InitJobControllerImpl()
+func BuildJobController(db *gorm.DB) controllers.JobControllerImpl {
+	jobRepo := repositories.InitJobRepoImpl(db)
+	jobService := services.InitJobServiceImpl(jobRepo)
+	return controllers.InitJobControllerImpl(jobService)
+}
+
+func BuildResultController() controllers.ResultControllerImpl {
+	return controllers.InitResultControllerImpl()
 }

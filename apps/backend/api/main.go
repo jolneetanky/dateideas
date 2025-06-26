@@ -6,18 +6,34 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/factory"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/db"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/utils"
 )
 
 func main() {
+	var err error
 	logger.InitLogger()
+	// db, dbErr := db.InitDB()
+	// NOTE: this is a pointer!!
+	jobDbPostgres := db.InitJobDBPostgres()
+
+	err = jobDbPostgres.InitDB()
+	if err != nil {
+		logger.Error(fmt.Printf("Failed to connect to DB: %s", err.Error()))
+	}
+
+	err = jobDbPostgres.ResetTable("jobs")
+	if err != nil {
+		logger.Error(fmt.Printf("Failed to reset tables: %s", err.Error()))
+	}
 
 	generatorController := factory.BuildGeneratorController()
-	jobController := factory.BuildJobController()
+	jobController := factory.BuildJobController(jobDbPostgres.GormDB)
+	resultController := factory.BuildResultController()
 
 	// Create new rabbitMQ connection
-	err := utils.NewRabbitMQConnection()
+	err = utils.NewRabbitMQConnection()
 
 	if err != nil {
 		logger.Error(fmt.Printf("Failed to create new RabbitMQ connection: %s", err.Error()))
@@ -30,6 +46,20 @@ func main() {
 	router.POST("/generator/generate", generatorController.Generate)
 
 	router.GET("/jobs/status/:jobId", jobController.GetStatus)
+
+	router.GET("/results/:jobId", resultController.GetResultsByJobId)
+
+	// get results
+	// where do we store these results?
+	// OPTION #1:
+	// Yea I think this makes the most sense.
+	// store in a result table, with { jobId: dateIdeaId }
+	// then to get all dateIdeas for a jobId,
+	// we can have an aggregator to fetch all these dateIdeaIds from a separate DB
+	// and piece it tgt
+
+	// we can index by `jobId`, then paginate from there.
+	// I think it's best to have a separate Paginator to paginate our results.
 
 	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
 }
