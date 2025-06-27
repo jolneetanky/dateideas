@@ -44,10 +44,11 @@ class WorkerImpl(Worker):
         # 2) STORE THIS ARRAY OF DATEIDEADB WITH THIS JOBID IN THE RESULTDB.
         # TODO: setup `results` DB
         # self.result_repo.insert_rows(jobid: dateideas_id for id in MOCK_DATEIDEAS_ID)
+
         mock_results = [
             1,
             2,
-            2,
+            4,
         ]
         self.resultRepo.insert_results(job_id, mock_results)
 
