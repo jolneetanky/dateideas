@@ -15,19 +15,6 @@ import os
 # this class is purposely as exposed as possible as the DB can always change (eg. new tables etc.)
 # it's as simple as possible to expose the engine and session to the repository layer.
 
-# # model definitions
-# Base = declarative_base()
-
-# class Job(Base):
-#     __tablename__ = 'jobs'
-#     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-#     status = Column(String, nullable=False)
-
-# class Result(Base):
-#     __tablename__ = 'results'
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     job_id = Column(String, ForeignKey('jobs.id'))
-
 # DB
 class GeneratorDB(PostgresDB):
     def __init__(self):
