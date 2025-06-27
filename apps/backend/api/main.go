@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/factory"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/db"
@@ -13,19 +15,22 @@ import (
 
 func main() {
 	var err error
+	// Load env variables
+	err = godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
+	// Initialize logger
 	logger.InitLogger()
-	// db, dbErr := db.InitDB()
-	// NOTE: this is a pointer!!
+	logger.Info(fmt.Sprintf("TEST:: %s", os.Getenv("GENERATOR_DB_HOST")))
+
+	// Initialize generator DB
 	jobDbPostgres := db.InitJobDBPostgres()
 
 	err = jobDbPostgres.InitDB()
 	if err != nil {
 		logger.Error(fmt.Printf("Failed to connect to DB: %s", err.Error()))
-	}
-
-	err = jobDbPostgres.ResetTable("jobs")
-	if err != nil {
-		logger.Error(fmt.Printf("Failed to reset tables: %s", err.Error()))
 	}
 
 	generatorController := factory.BuildGeneratorController()

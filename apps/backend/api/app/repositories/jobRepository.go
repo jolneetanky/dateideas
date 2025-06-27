@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"github.com/google/uuid"
-	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/db"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"gorm.io/gorm"
 )
@@ -25,8 +25,9 @@ func (jr JobRepositoryImpl) GetStatus(jobId uuid.UUID) (status string, err error
 	logger.Info("Getting status...")
 
 	// job := &db.Job
-	var job db.Job
-	err = jr.db.Where(&db.Job{ID: jobId}, "id").First(&job).Error
+	var job entity.Job
+	// err = jr.db.Error
+	err = jr.db.Where(&entity.Job{ID: jobId}, "id").First(&job).Error
 
 	if err != nil {
 		return "", err
