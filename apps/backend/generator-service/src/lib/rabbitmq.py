@@ -31,7 +31,7 @@ def format_message(body: bytes) -> JobQueueConsumedMessage:
     )
 
 def consume_queue(worker: WorkerImpl):
-    def callback(ch, method, properties, body:JobQueueConsumedMessage):
+    def callback(ch, method, properties, body: bytes):
         print(f"RECEIVED: {body}")
 
         formatted_body = format_message(body)

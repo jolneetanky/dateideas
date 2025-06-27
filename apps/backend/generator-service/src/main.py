@@ -2,7 +2,7 @@ import sys
 import os
 from services.worker import WorkerImpl
 from repository.job_repo import JobRepoImpl
-from lib.psycopg import initPostgresJobDB, postgresJobDB
+from repository.result_repo import ResultRepoImpl
 from lib.rabbitmq import consume_queue
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
@@ -17,7 +17,8 @@ def main():
 
     # # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
-    worker = WorkerImpl(jobRepo)
+    resultRepo = ResultRepoImpl()
+    worker = WorkerImpl(jobRepo, resultRepo)
 
     consume_queue(worker) # blocking
 
@@ -30,7 +31,8 @@ if __name__ == '__main__':
             sys.exit(0) # exit with no problems
         except SystemExit:
            os._exit(0) 
-    except Exception:
+    except Exception as e:
+        print("ERROR", e)
         try:
             sys.exit(0) # exit with no problems
         except SystemExit:

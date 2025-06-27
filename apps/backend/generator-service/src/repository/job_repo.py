@@ -17,9 +17,12 @@ class JobRepo(ABC):
     def insert_job(self, job_id: uuid.UUID, status:Status):
         pass
 
+    @abstractmethod
+    def update_job(self, job_id: uuid.UUID, status: Status):
+        pass
 
 class JobRepoImpl(JobRepo):
-    def insert_job(self, job_id, status:Status):
+    def insert_job(self, job_id: uuid.UUID, status:Status):
         logger = initLogger("jobRepo.insert_job")
         logger.info("inserting jobID into DB...")
 
@@ -35,7 +38,17 @@ class JobRepoImpl(JobRepo):
             raise
  
     
-    def update_job(self, job_id, status):
+    def update_job(self, job_id: uuid.UUID, status:Status):
         logger = initLogger("jobRepo.update_job")
         logger.info("updating job status...")
         # postgresJobDB.update_job_status(job_id, status)
+        session = generatorDB.session  # get the session
+        try:
+            job = session.query(Job).filter_by(id=job_id).first()
+            if job:
+                job.status = status.value 
+                session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Failed to update job status: {e}")
+            raise

@@ -2,11 +2,12 @@ from abc import ABC, abstractmethod
 from domain.resource.message import JobQueueConsumedMessage
 from domain.shared.job import Status
 from repository.job_repo import JobRepo
+from repository.result_repo import ResultRepo
 from lib.logger import initLogger
 
 # abstract class
 class Worker(ABC):
-    def __init__(self, jobRepo: JobRepo):
+    def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo):
         pass
 
     @abstractmethod
@@ -23,8 +24,9 @@ MOCK_DATEIDEAS_IDS = [
 ]
 
 class WorkerImpl(Worker):
-    def __init__(self, jobRepo: JobRepo):
+    def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo):
         self.jobRepo = jobRepo
+        self.resultRepo = resultRepo
 
     def generate(self, data: JobQueueConsumedMessage):
         logger = initLogger("worker.generate")
@@ -42,6 +44,12 @@ class WorkerImpl(Worker):
         # 2) STORE THIS ARRAY OF DATEIDEADB WITH THIS JOBID IN THE RESULTDB.
         # TODO: setup `results` DB
         # self.result_repo.insert_rows(jobid: dateideas_id for id in MOCK_DATEIDEAS_ID)
+        mock_results = [
+            1,
+            2,
+            2,
+        ]
+        self.resultRepo.insert_results(job_id, mock_results)
 
         # simulate job completion
         # generate date ideas...
