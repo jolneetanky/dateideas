@@ -1,8 +1,12 @@
 # external DB integration. We can use an ORM.
 # connect to jobDB
 import psycopg
+from lib.db.base import DB
+from lib.logger import initLogger
 
-class PostgresJobDB:
+# TODO: refactor this class it's too messy
+class PostgresDB(DB):
+
     def connect_db(self):
         print("Connecting to DB...") 
         conn = psycopg.connect(
@@ -10,6 +14,9 @@ class PostgresJobDB:
         )
 
         self.conn = conn
+
+    def reset_table(self, tableName: str):
+        pass
 
     def setup_job_table(self):
         # Open a cursor to perform DB operations
@@ -52,9 +59,9 @@ class PostgresJobDB:
             )
         self.conn.commit() 
 
-postgresJobDB = PostgresJobDB() # singleton
+postgresJobDB = PostgresDB() # singleton
 
 def initPostgresJobDB():
     postgresJobDB.connect_db()
-    # postgresJobDB.setup_job_table()
     postgresJobDB.reset_jobs_table()
+    # postgresJobDB.reset_table("jobs")

@@ -5,16 +5,25 @@ from lib.logger import initLogger
 
 # abstract class
 class Worker(ABC):
-    def __init__(self, repo: JobRepo):
+    def __init__(self, jobRepo: JobRepo):
         pass
 
     @abstractmethod
     def generate(self):
         pass
 
+# for now we'll just say every job get's these results.
+MOCK_DATEIDEAS_IDS = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+]
+
 class WorkerImpl(Worker):
-    def __init__(self, repo: JobRepo):
-        self.repo = repo
+    def __init__(self, jobRepo: JobRepo):
+        self.jobRepo = jobRepo
 
     def generate(self, data: JobQueueConsumedMessage):
         logger = initLogger("worker.generate")
@@ -23,16 +32,21 @@ class WorkerImpl(Worker):
         job_id = data.job_id
         # self.repo.insert_job(job_id, status)
         try:
-            self.repo.insert_job(job_id, "pending")
+            self.jobRepo.insert_job(job_id, "pending")
         except Exception as e:
             logger.error(f"Error inserting job into DB: {e}")
             raise # rethrow exception after logging 
+
+        # 1) GENERATE RESULTS. ASSUME IT WORKS AND WE SOMEHOW GET AN ARRAY OF DATEIDEAID.
+        # 2) STORE THIS ARRAY OF DATEIDEADB WITH THIS JOBID IN THE RESULTDB.
+        # TODO: setup `results` DB
+        # self.result_repo.insert_rows(jobid: dateideas_id for id in MOCK_DATEIDEAS_ID)
 
         # simulate job completion
         # generate date ideas...
         # after geneneration, mark job id as either "success" or "error"
         try:
-            self.repo.update_job(job_id, "success")
+            self.jobRepo.update_job(job_id, "success")
         except Exception as e:
             logger.error(f"Error updating job id as success: {e}")
             raise # rethrow exception after logging 

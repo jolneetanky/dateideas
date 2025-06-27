@@ -4,28 +4,33 @@ from services.worker import WorkerImpl
 from repository.job_repo import JobRepoImpl
 from lib.psycopg import initPostgresJobDB, postgresJobDB
 from lib.rabbitmq import consume_queue
+from lib.db.generatordb import generatorDB
+from lib.logger import initLogger
 
 def main():
-    # TODO: 1) debug why the vlaues aren't being inserted into DB
+    logger = initLogger("main")
+    generatorDB.connect_db()
+    generatorDB.reset_all_tables()
 
-    # connect to DB, initialize table if not yet initialized
-    # postgresJobDB.connect_db()
-    # postgresJobDB.setup_job_table()
-    
-    # initializers
-    initPostgresJobDB()
+    # # initializers
+    # initPostgresJobDB() # our actual underlying DB connections.
 
+    # # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
     worker = WorkerImpl(jobRepo)
 
     consume_queue(worker) # blocking
 
 if __name__ == '__main__':
-    # run a never ending loop hehe
     try:
         main()
     except KeyboardInterrupt:
         print("Interrupted")
+        try:
+            sys.exit(0) # exit with no problems
+        except SystemExit:
+           os._exit(0) 
+    except Exception:
         try:
             sys.exit(0) # exit with no problems
         except SystemExit:

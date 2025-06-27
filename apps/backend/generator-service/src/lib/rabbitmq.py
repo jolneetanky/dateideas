@@ -4,6 +4,7 @@ import pika
 from domain.resource.message import JobQueueConsumedMessage
 from services.worker import WorkerImpl
 
+# TODO: reformat into a class
 # formats message into the resource we need
 def format_message(body: bytes) -> JobQueueConsumedMessage:
     # # Decode from bytes to string
