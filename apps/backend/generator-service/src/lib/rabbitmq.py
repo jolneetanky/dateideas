@@ -8,19 +8,6 @@ from lib.logger import initLogger
 # TODO: reformat into a class
 # formats message into the resource we need
 def format_message(body: bytes) -> JobQueueConsumedMessage:
-    # # Decode from bytes to string
-    # json_str = body.decode("utf-8")
-
-    # # Parse the JSON string into a Python dictionary
-    # # Like {job_id: job_id, prompt: prompt, }
-    # data = json.loads(json_str)
-
-    # # Unpack dictionary into dataclass
-    # # Equiv to doing `JobQueueConsumedMessage(job_id=job_id, prompt: prompt)`
-    # message = JobQueueConsumedMessage(**data)
-
-    # return message
-
     data = json.loads(body)
     print("DATAAA", data)
 
@@ -38,10 +25,11 @@ def consume_queue(worker: WorkerImpl):
 
         formatted_body = format_message(body)
         try:
-            worker.generate(formatted_body)
+            logger.info("Generating...")
+            worker.generate(formatted_body.job_id, formatted_body.prompt, formatted_body.location, formatted_body.budget)
         except Exception as e:
             logger.error(f"ERROR: {e}") 
-            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+            ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
             return
 
         ch.basic_ack(delivery_tag=method.delivery_tag)

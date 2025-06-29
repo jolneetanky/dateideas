@@ -59,8 +59,11 @@ class OllamaGenerator(Generator):
                                 json={"model": "llama3.2", # Specify the model to use
                                     "prompt": _repr}) # Provide the combined features as the prompt
 
+            print("embedding...")
+            print("RES", res)
             # Extract embedding from API response
             embedding = res.json()['embedding']
+            print("after embedding")
 
             # Store generated embedding in numpy array `X`
             X[i] = np.array(embedding)
