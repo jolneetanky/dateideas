@@ -7,17 +7,50 @@ import (
 	"gorm.io/gorm"
 )
 
-func BuildGeneratorController() controllers.GeneratorControllerImpl {
-	generatorService := services.InitGeneratorServiceImpl()
-	return controllers.InitGeneratorControllerImpl(generatorService)
+// controllers
+var GeneratorController controllers.GeneratorControllerImpl
+var JobController controllers.JobControllerImpl
+var ResultController controllers.ResultControllerImpl
+
+// services
+var GeneratorService services.GeneratorServiceImpl
+var JobService services.JobServiceImpl
+var ResultService services.ResultServiceImpl
+
+// repositories
+var JobRepo repositories.JobRepositoryImpl
+var ResultRepo repositories.ResultRepositoryImpl
+
+func Init(db *gorm.DB) {
+	// build repos
+	JobRepo = repositories.InitJobRepoImpl(db)
+	ResultRepo = repositories.InitResultRepoImpl(db)
+
+	// build services
+	GeneratorService = services.InitGeneratorServiceImpl(JobRepo)
+	JobService = services.InitJobServiceImpl(JobRepo)
+	ResultService = services.InitResultServiceImpl(ResultRepo)
+
+	// build controllers
+	GeneratorController = controllers.InitGeneratorControllerImpl(GeneratorService)
+	JobController = controllers.InitJobControllerImpl(JobService)
+	ResultController = controllers.InitResultControllerImpl(ResultService)
 }
 
-func BuildJobController(db *gorm.DB) controllers.JobControllerImpl {
-	jobRepo := repositories.InitJobRepoImpl(db)
-	jobService := services.InitJobServiceImpl(jobRepo)
-	return controllers.InitJobControllerImpl(jobService)
-}
+// func BuildGeneratorController(db *gorm.DB) controllers.GeneratorControllerImpl {
+// 	jobRepo := repositories.InitJobRepoImpl(db)
+// 	generatorService := services.InitGeneratorServiceImpl()
+// 	return controllers.InitGeneratorControllerImpl(generatorService)
+// }
 
-func BuildResultController() controllers.ResultControllerImpl {
-	return controllers.InitResultControllerImpl()
-}
+// func BuildJobController(db *gorm.DB) controllers.JobControllerImpl {
+// 	jobRepo := repositories.InitJobRepoImpl(db)
+// 	jobService := services.InitJobServiceImpl(jobRepo)
+// 	return controllers.InitJobControllerImpl(jobService)
+// }
+
+// func BuildResultController(db *gorm.DB) controllers.ResultControllerImpl {
+// 	resultRepo := repositories.InitResultRepoImpl(db)
+// 	resultService := services.InitResultServiceImpl(resultRepo)
+// 	return controllers.InitResultControllerImpl(resultService)
+// }

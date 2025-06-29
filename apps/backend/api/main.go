@@ -33,9 +33,13 @@ func main() {
 		logger.Error(fmt.Printf("Failed to connect to DB: %s", err.Error()))
 	}
 
-	generatorController := factory.BuildGeneratorController()
-	jobController := factory.BuildJobController(jobDbPostgres.GormDB)
-	resultController := factory.BuildResultController()
+	factory.Init(jobDbPostgres.GormDB)
+	// generatorController := factory.BuildGeneratorController()
+	// jobController := factory.BuildJobController(jobDbPostgres.GormDB)
+	// resultController := factory.BuildResultController(jobDbPostgres.GormDB)
+	generatorController := factory.GeneratorController
+	jobController := factory.JobController
+	resultController := factory.ResultController
 
 	// Create new rabbitMQ connection
 	err = utils.NewRabbitMQConnection()

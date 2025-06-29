@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/services"
 )
 
 type ResultController interface {
@@ -15,10 +16,11 @@ type ResultController interface {
 }
 
 type ResultControllerImpl struct {
+	service services.ResultServiceImpl
 }
 
-func InitResultControllerImpl() ResultControllerImpl {
-	return ResultControllerImpl{}
+func InitResultControllerImpl(service services.ResultServiceImpl) ResultControllerImpl {
+	return ResultControllerImpl{service: service}
 }
 
 // implement methods
@@ -27,7 +29,7 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	jobId := c.Param("jobId")
 
 	// format to uuid
-	_, parseErr := uuid.Parse(jobId)
+	formattedJobId, parseErr := uuid.Parse(jobId)
 
 	if parseErr != nil {
 		logger.Info(fmt.Sprintf("Error parsing jobId: %s", parseErr.Error()))
@@ -39,6 +41,26 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 		})
 		return
 	}
+
+	dateIdeaIds, serviceErr := rc.service.GetResultsByJobId(formattedJobId)
+
+	if serviceErr != nil {
+		logger.Info(fmt.Sprintf("Error getting results by jobID: %s", serviceErr.Error()))
+		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
+			Status:  resource.Error,
+			Message: fmt.Sprintf("Failed to get results for jobId %s", jobId),
+			Error:   parseErr.Error(),
+			Data:    nil,
+		})
+	}
+
+	logger.Info(fmt.Sprintf("Successfully get results for jobId %s", jobId))
+	c.JSON(http.StatusOK, resource.ApiResponse[[]string]{
+		Status:  resource.Success,
+		Message: "Successfully fetch results",
+		Error:   "",
+		Data:    dateIdeaIds,
+	})
 
 	// pass to result DB, get paginated
 	// TODO: populate resultDB with mock results for some `jobId`

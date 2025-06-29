@@ -3,6 +3,7 @@ import json
 import pika
 from domain.resource.message import JobQueueConsumedMessage
 from services.worker import WorkerImpl
+from lib.logger import initLogger
 
 # TODO: reformat into a class
 # formats message into the resource we need
@@ -32,12 +33,14 @@ def format_message(body: bytes) -> JobQueueConsumedMessage:
 
 def consume_queue(worker: WorkerImpl):
     def callback(ch, method, properties, body: bytes):
+        logger = initLogger("consumer")
         print(f"RECEIVED: {body}")
 
         formatted_body = format_message(body)
         try:
             worker.generate(formatted_body)
         except Exception as e:
+            logger.error(f"ERROR: {e}") 
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
             return
 

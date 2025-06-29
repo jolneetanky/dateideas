@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/utils"
 )
 
@@ -16,11 +18,12 @@ type GeneratorService interface {
 
 // Define implementation struct
 type GeneratorServiceImpl struct {
+	jobRepo repositories.JobRepositoryImpl
 }
 
 // Constructor to initialize GeneratorServiceImpl
-func InitGeneratorServiceImpl() GeneratorServiceImpl {
-	return GeneratorServiceImpl{}
+func InitGeneratorServiceImpl(jobRepo repositories.JobRepositoryImpl) GeneratorServiceImpl {
+	return GeneratorServiceImpl{jobRepo: jobRepo}
 }
 
 // Implement methods
@@ -51,6 +54,15 @@ func (gs GeneratorServiceImpl) Generate(prompt string, location string, budget i
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failed to marshall message to JSON. Error: %s", err.Error()))
 		return "", err
+	}
+
+	// parse into UUID
+	id, _ := utils.ParseUUID(jobId)
+	// Insert into job repo
+	postErr := gs.jobRepo.PostJob(id, entity.JobStatusPending)
+
+	if postErr != nil {
+		return "", postErr
 	}
 
 	// Send job ID

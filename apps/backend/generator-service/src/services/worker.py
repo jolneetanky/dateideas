@@ -30,15 +30,16 @@ class WorkerImpl(Worker):
 
     def generate(self, data: JobQueueConsumedMessage):
         logger = initLogger("worker.generate")
-        logger.info("inserting jobID into DB...")
+        logger.info("CONSUMING...")
+        # logger.info("inserting jobID into DB...")
 
         job_id = data.job_id
-        # self.repo.insert_job(job_id, status)
-        try:
-            self.jobRepo.insert_job(job_id, Status.PENDING)
-        except Exception as e:
-            logger.error(f"Error inserting job into DB: {e}")
-            raise # rethrow exception after logging 
+        # # self.repo.insert_job(job_id, status)
+        # try:
+        #     self.jobRepo.insert_job(job_id, Status.PENDING)
+        # except Exception as e:
+        #     logger.error(f"Error inserting job into DB: {e}")
+        #     raise # rethrow exception after logging 
 
         # 1) GENERATE RESULTS. ASSUME IT WORKS AND WE SOMEHOW GET AN ARRAY OF DATEIDEAID.
         # 2) STORE THIS ARRAY OF DATEIDEADB WITH THIS JOBID IN THE RESULTDB.

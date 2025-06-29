@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
@@ -8,7 +10,8 @@ import (
 )
 
 type JobRepository interface {
-	GetStatus(jobId uuid.UUID) (status string, err error)
+	GetStatus(jobId uuid.UUID) (status entity.JobStatus, err error)
+	PostJob(jobId uuid.UUID, status entity.JobStatus) (err error)
 }
 
 type JobRepositoryImpl struct {
@@ -20,7 +23,7 @@ func InitJobRepoImpl(db *gorm.DB) JobRepositoryImpl {
 }
 
 // implement methods
-func (jr JobRepositoryImpl) GetStatus(jobId uuid.UUID) (status string, err error) {
+func (jr JobRepositoryImpl) GetStatus(jobId uuid.UUID) (status entity.JobStatus, err error) {
 	// TODO: integrate with actual DB via gorm
 	logger.Info("Getting status...")
 
@@ -34,4 +37,19 @@ func (jr JobRepositoryImpl) GetStatus(jobId uuid.UUID) (status string, err error
 	}
 
 	return job.Status, nil
+}
+
+func (jr JobRepositoryImpl) PostJob(jobId uuid.UUID, status entity.JobStatus) (err error) {
+	logger.Info(fmt.Sprintf("Inserting jobID %s with status %s", jobId, status))
+	job := entity.Job{ID: jobId, Status: status}
+	err = jr.db.Create(&job).Error
+
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to insert job: %s", err.Error()))
+		return err
+	}
+
+	logger.Info("Successfully inserted job")
+
+	return nil
 }

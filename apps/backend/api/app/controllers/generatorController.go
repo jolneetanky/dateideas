@@ -59,7 +59,7 @@ func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 			Data:    nil,
 		})
 	} else {
-		logger.Info(jobId)
+		logger.Info("Successfully enqueued job")
 		c.JSON(http.StatusOK, resource.ApiResponse[string]{
 			Status:  resource.Success,
 			Message: "Successfully enqueued job",

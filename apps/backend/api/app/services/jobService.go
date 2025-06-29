@@ -2,13 +2,14 @@ package services
 
 import (
 	"github.com/google/uuid"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
 )
 
 // Define interface
 type JobService interface {
-	GetStatus(jobId uuid.UUID) (status string, err error)
+	GetStatus(jobId uuid.UUID) (status entity.JobStatus, err error)
 }
 
 // Define implementation struct
@@ -21,7 +22,7 @@ func InitJobServiceImpl(repo repositories.JobRepositoryImpl) JobServiceImpl {
 	return JobServiceImpl{repo}
 }
 
-func (js JobServiceImpl) GetStatus(jobId uuid.UUID) (status string, err error) {
+func (js JobServiceImpl) GetStatus(jobId uuid.UUID) (status entity.JobStatus, err error) {
 	logger.Info("Getting status...")
 	// // format to uuid
 	// id, parseErr := uuid.Parse(jobId)

@@ -47,7 +47,7 @@ class GeneratorDB(PostgresDB):
             url="postgresql://{0}:{1}@{2}:{3}/{4}".format(
                 user, password, host, port, database
             ),
-            echo=True
+            # echo=True
         )
         return engine
     

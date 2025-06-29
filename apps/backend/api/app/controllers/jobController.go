@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/services"
@@ -52,7 +53,7 @@ func (jc JobControllerImpl) GetStatus(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("Successfully get status for jobId %s: %s", jobId, status))
-	c.JSON(http.StatusOK, resource.ApiResponse[string]{
+	c.JSON(http.StatusOK, resource.ApiResponse[entity.JobStatus]{
 		Status:  resource.Success,
 		Message: "Successfully fetch status",
 		Error:   "",
