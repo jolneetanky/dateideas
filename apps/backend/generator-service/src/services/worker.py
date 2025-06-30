@@ -6,6 +6,8 @@ from repository.result_repo import ResultRepo
 from lib.logger import initLogger
 import overpy
 from urllib.parse import quote
+from lib.semantic_filterer.base import TestFilterer
+from lib.generator.base import DateIdeaGenerator
 from generator.ollama_generator import OllamaGenerator
 
 # for now we'll just say every job get's these results.
@@ -33,34 +35,60 @@ MOCK_DATEIDEAS_IDS = [
 def gather_data(area: str):
     res = []
     logger = initLogger("GATHER DATA")
+    logger.info("Gathering data...")
     api = overpy.Overpass()
     # NOTE: in overpass, we can limit our search to an area + bounding box (so that we don't get results from all over the world.)
     result = api.query(f"""
                        area["name:en"={area}]->.a;
-                       node(area.a);
-                       out;
+                       node(area.a)["name"];
+                       out center;
                        """)
-
+    
     for node in result.get_nodes():
-        formatted_node = {
-            "id": node.id,
-            "lat": node.lat,
-            "lon": node.lon,
-            "tags": node.tags,
-            "areas": result.areas,
-        }
-        res.append(formatted_node)
-    logger.info(f"HIII {res}")
+        res.append(format_node(node))
     return res
 
-def format_data(data):
+# format nodes into a dict
+def format_node(node):
+    # tags  we're interested in
+    # tag_features = set(['amenity', 'name', 'website'])
+    logger = initLogger("worker.format_node()")
+    # logger.info("Formatting node...")
+    
+    formatted_node = {
+        "id": node.id,
+        "lat":  node.lat,
+        "lon":  node.lon,
+        "tags": node.tags,
+        # "name": node.tags.get("name", ""), # for some reason, this is empthyy string even if node.tags contains `name`
+        # "tags": node.tags,
+
+        # "name": node['tags'].get('nayeah im thinking if i should flatten the tme', ""),
+        # "street": row['tags'].get('addr:street', ""),
+        # "city": row['tags'].get('addr:city', ""),
+        # "house_number": row['tags'].get('addr:housenumber', ""),
+        # "floor": row['tags'].get('addr:floor', ""),
+        # "unit": row['tags'].get('addr:unit', ""),
+        # "amenity": "",
+        # "website": "",
+    }
+
+    # flatten tags
+    # for k, v in node.tags.items():
+    #     formatted_node[k] = v
+
+    return formatted_node
+
+'''
+def format_nodes(nodes):
     # tags we're interested in
     tag_features = set(['amenity', 'name', 'website'])
 
     res = []
-    for row in data:
+    for row in nodes:
         row = row.copy()
-        
+
+        # format address 
         dct = {
             "name": row['tags'].get('name', ""),
             "street": row['tags'].get('addr:street', ""),
@@ -68,18 +96,22 @@ def format_data(data):
             "house_number": row['tags'].get('addr:housenumber', ""),
             "floor": row['tags'].get('addr:floor', ""),
             "unit": row['tags'].get('addr:unit', ""),
+            "amenity": "",
+            "name": "",
+            "website": "",
         }
 
         for k, v in dct.items():
             row[k] = v
 
-        query = dct['name']
-        if query != "":
-            query += f", {dct['street']}"
-        formatted_query = quote(query)
-        if query == "":
-            formatted_query = quote(f"{row['lat']},{row['lon']}")    
-        gmaps_link = f"https://google.com/maps/search/?api=1&query={formatted_query}"
+        # get gmaps  link
+        name = dct['name']
+        if name != "":
+            name += f", {dct['street']}"
+        formatted_name = quote(name)
+        if name == "":
+            formatted_name = quote(f"{row['lat']},{row['lon']}")    
+        gmaps_link = f"https://google.com/maps/search/?api=1&query={formatted_name}"
 
         row['link'] = gmaps_link
 
@@ -95,50 +127,8 @@ def format_data(data):
         res.append(row)
     
     return res
-class Generator(ABC):
-    @abstractmethod
-    def generate(prompt: str):
-        pass
-
-# MOST NAIVE/BASIC ONE:
-# 1) input: prompt. based on data set, it gives us entries that fit the prompt.
-# hm that is basically a semantic search and will be the same each time. how do i make it fun?
-# it will simply feel like google search, eg. "date ideas for 2 near bugis" => and we just get like ["yakiniku go", "fun karaoke"]
-# which is super boring! even google can do it
-
-# NEW IDEA:
-# based on the prompt, generator generates an actual idea, eg. "Take a nice long walk along the beach. Here are some beaches near bugis: "
-# we then use this output & its keywords => query Overpass API to get matching locations.
-# User can regenerate so that each time, a different idea is generated. Which is much more fun.
-
-class DateIdeaGenerator(Generator):
-    def generate(prompt: str):
-        # STEP #1: GENERATE A DATEIDEA
-        # Can think of this as a chatgpt wrapper that basically asks chatGPT t ogenerate create dateideas
-        # problem for later: this dateidea needs to be constrained by the prompt as well
-        # ie. the suggestion should be based on actual available locations around the area..?
-        logger = initLogger("DateIdeaGenerator.generate")
-        desc = "Take a nice stroll around Orchard Towers to see the lights"
-        # STEP #2: USE SEMANTIC FILTERING TO GENERATE A LIST OF LOCATIONS BASED ON THE GENERATED DESC
-        return desc
+'''
     
-# class SemanticFilterer(ABC):
-#     @abstractmethod
-#     def filter(prompt: str):
-
-#         pass
-
-# class TestFilterer(SemanticFilterer):
-#     def filter(prompt: str):
-# # flatten tags and see how it goes lol
-# # this should be in gatherer service.
-#         pass
-
-class Filterer():
-    def filter(prompt: str):
-        pass
-
-# abstract class
 class Worker(ABC):
     def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo):
         pass
@@ -156,6 +146,7 @@ class WorkerImpl(Worker):
 
     def generate(self, job_id, prompt, location, budget):
         logger = initLogger("worker.generate")
+        logger.info("Genrating...")
 
         # 1) GENERATE RESULTS. ASSUME IT WORKS AND WE SOMEHOW GET AN ARRAY OF DATEIDEAID.
         # 2) STORE THIS ARRAY OF DATEIDEADB WITH THIS JOBID IN THE RESULTDB.
@@ -165,24 +156,18 @@ class WorkerImpl(Worker):
         # NEED: see what kind of data we can find online (for free!) that we can use to store dateideas.
         # Instead of a DB for now, maybe just use an array that stores rows in the form of a hashmap.
 
-        data = gather_data("Orchard")
+        data = gather_data("Orchard")[:20] # trim to length 20 first
         print("DATA", data)
-        formatted_data = format_data(data)
-        print("FORMATTED DATA", formatted_data)
+        # formatted_data = format_data(data)
+        # print("FORMATTED DATA", formatted_data)
 
         generator = DateIdeaGenerator()
-        # filterer = SemanticFilterer()
-        desc = generator.generate()
+        desc = generator.generate(prompt)
         logger.info(f"DESC: {desc}")
 
-        filterer = Filterer()
-        res = filterer.filter()
-        # semanticFilterer = OllamaGenerator()
-        # res = semanticFilterer.generate(desc, formatted_data)
-        # print("RES", res)
-        # locations = filterer.filter(desc, formatted_data)
-
-        # logger.info(f"DESC: {desc}, LOCATIONS: {locations}")
+        generator = OllamaGenerator()
+        res = generator.generate(desc, data)
+        logger.info(f"RES: {res}")
 
         # READ FROM SOME DB OF DATEIDEAS
         # RETURN THEIR IDS

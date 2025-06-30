@@ -6,8 +6,11 @@ from repository.result_repo import ResultRepoImpl
 from lib.rabbitmq import consume_queue
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
+from dotenv import load_dotenv
 
 def main():
+    load_dotenv()
+    print("HII", os.getenv("HUGGINGFACE_TOKEN"))
     logger = initLogger("main")
     generatorDB.connect_db()
     generatorDB.reset_all_tables()
