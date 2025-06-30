@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
@@ -28,7 +27,7 @@ func InitResultServiceImpl(resultRepo repositories.ResultRepositoryImpl) ResultS
 	return ResultServiceImpl{resultRepo: resultRepo}
 }
 
-func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (dateIdeaIds []string, err error) {
+func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (nodeIds []string, err error) {
 	logger.Info(fmt.Sprintf("Getting results for job ID: %s", jobId))
 
 	results, err := rs.resultRepo.GetResultsByJobId(jobId)
@@ -38,14 +37,12 @@ func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (dateIdeaIds []st
 		return nil, err
 	}
 
-	// Extract dateideaIds
-	dateIdeaIds = make([]string, len(results))
+	// Extract nodeIDs
+	nodeIds = make([]string, len(results))
 	for i, res := range results {
-		dateIdeaIds[i] = strconv.Itoa(res.DateIdeaID)
+		nodeIds[i] = res.NodeID
 	}
 
-	// Fetch dateideas
-
-	return dateIdeaIds, nil
+	return nodeIds, nil
 
 }

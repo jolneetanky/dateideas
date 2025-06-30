@@ -49,7 +49,7 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
 			Message: fmt.Sprintf("Failed to get results for jobId %s", jobId),
-			Error:   parseErr.Error(),
+			Error:   serviceErr.Error(),
 			Data:    nil,
 		})
 	}

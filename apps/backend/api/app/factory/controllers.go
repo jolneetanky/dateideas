@@ -2,9 +2,9 @@ package factory
 
 import (
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/controllers"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/db"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/services"
-	"gorm.io/gorm"
 )
 
 // controllers
@@ -21,10 +21,18 @@ var ResultService services.ResultServiceImpl
 var JobRepo repositories.JobRepositoryImpl
 var ResultRepo repositories.ResultRepositoryImpl
 
-func Init(db *gorm.DB) {
+// db
+var GeneratorDb db.GeneratorDB
+
+func Init() {
+	// Build db
+	GeneratorDb = db.InitGeneratorDB()
+	GeneratorDb.ConnectDB()
+	GeneratorDb.ResetAllTables()
+
 	// build repos
-	JobRepo = repositories.InitJobRepoImpl(db)
-	ResultRepo = repositories.InitResultRepoImpl(db)
+	JobRepo = repositories.InitJobRepoImpl(GeneratorDb.GormDB)
+	ResultRepo = repositories.InitResultRepoImpl(GeneratorDb.GormDB)
 
 	// build services
 	GeneratorService = services.InitGeneratorServiceImpl(JobRepo)

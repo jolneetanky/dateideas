@@ -8,7 +8,6 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/factory"
-	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/db"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/utils"
 )
@@ -25,18 +24,8 @@ func main() {
 	logger.InitLogger()
 	logger.Info(fmt.Sprintf("TEST:: %s", os.Getenv("GENERATOR_DB_HOST")))
 
-	// Initialize generator DB
-	jobDbPostgres := db.InitJobDBPostgres()
+	factory.Init()
 
-	err = jobDbPostgres.InitDB()
-	if err != nil {
-		logger.Error(fmt.Printf("Failed to connect to DB: %s", err.Error()))
-	}
-
-	factory.Init(jobDbPostgres.GormDB)
-	// generatorController := factory.BuildGeneratorController()
-	// jobController := factory.BuildJobController(jobDbPostgres.GormDB)
-	// resultController := factory.BuildResultController(jobDbPostgres.GormDB)
 	generatorController := factory.GeneratorController
 	jobController := factory.JobController
 	resultController := factory.ResultController

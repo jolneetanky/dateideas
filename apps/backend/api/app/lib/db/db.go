@@ -1,5 +1,6 @@
 package db
 
 type DB interface {
-	InitDB() error
+	ConnectDB() error
+	ResetAllTables() error
 }
