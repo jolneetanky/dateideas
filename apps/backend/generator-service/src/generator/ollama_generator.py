@@ -35,6 +35,7 @@ def combine_features(row):
 
 def embed(input: str) -> dict:
     logger = initLogger("generator.ollama_generator.embed()")
+    logger.info("EMBEDDING...")
     HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
     PROVIDER = "hf-inference"
     MODEL = "intfloat/multilingual-e5-large-instruct"
@@ -50,11 +51,12 @@ def embed(input: str) -> dict:
         model=MODEL,
     )
     return result
-class OllamaGenerator(Generator):
+class GeneratorImpl(Generator):
     def __init__(self):
         pass
-
-    def generate(self, prompt, data) -> list[GeneratedData]:
+    
+    # returns a list of nodeIDs
+    def generate(self, prompt, data) -> list[str]:
         logger = initLogger("generator.ollama_generator.generate()")
         # Generate and display recommendations
         logger.info(f"PROMPT: {prompt}")
@@ -85,18 +87,6 @@ class OllamaGenerator(Generator):
             # Print progress every 10 locations processed
             if i % 10 == 0:
                 print("Processed {}/{}".format(i, len(df['combined_features']))) 
-
-            # Generate embeddings  
-            # Send a POST req to the local Llama model API to generate embeddings
-            # res = requests.post("http://localhost:11434/api/embeddings",
-            #                     json={"model": "nomic-embed-text", # Specify the model to use
-            #                         "prompt": _repr}) # Provide the combined features as the prompt
-
-            # print("embedding...")
-            # print("RES", res.json())
-            # # Extract embedding from API response
-            # embedding = res.json()['embedding']
-            # print("after embedding")
 
             embedding_list = embed(_repr)
 
@@ -140,6 +130,11 @@ class OllamaGenerator(Generator):
             # dateidea = GeneratedData(**mapped_data)
 
             # dateideas.append(dateidea)
-            dateideas.append(row_dict["tags"].get("name", ""))
+            # dateideas.append(row_dict["tags"].get("name", ""))
+            # nodeid
+
+            # NEED: node_id
+            node_id = row_dict["node_id"]
+            dateideas.append(node_id)
         
         return dateideas

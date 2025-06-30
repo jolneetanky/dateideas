@@ -7,23 +7,22 @@ from lib.rabbitmq import consume_queue
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
 from dotenv import load_dotenv
+from initializers.main import overpassApiClient
 
 def main():
     load_dotenv()
-    print("HII", os.getenv("HUGGINGFACE_TOKEN"))
     logger = initLogger("main")
     generatorDB.connect_db()
     generatorDB.reset_all_tables()
 
-    # # initializers
-    # initPostgresJobDB() # our actual underlying DB connections.
+    overpassApiClient.get_node_by_id("52246524")
 
     # # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
     resultRepo = ResultRepoImpl()
     worker = WorkerImpl(jobRepo, resultRepo)
 
-    consume_queue(worker) # blocking
+    # consume_queue(worker) # blocking
 
 if __name__ == '__main__':
     try:
