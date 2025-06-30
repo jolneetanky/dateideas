@@ -9,20 +9,18 @@ class ResultRepo(ABC):
         pass
 
     # UNDO 
-    def insert_results(self, job_id: uuid.UUID, dateidea_ids: list[int]):
+    def insert_results(self, job_id: uuid.UUID, desc: str, node_ids: list[str]):
         pass
 
 class ResultRepoImpl(ResultRepo):
     # NOTE: for scalability, we caan use this function with batched results.
-    def insert_results(self, job_id: uuid.UUID, dateidea_ids: list[int]):
+    def insert_results(self, job_id: uuid.UUID, desc: str, node_ids: list[str]):
         logger = initLogger("ResultRepo.insert_results")
         logger.info(f"Inserting results for jobID {job_id}...")
         results = [
-            Result(job_id=job_id, dateidea_id=dateidea_id)
-            for dateidea_id in dateidea_ids
+            Result(job_id=job_id, description=desc, node_id=node_id)
+            for node_id in node_ids
         ]
-        # logger.info("HIII")
         generatorDB.session.add_all(results)
-        # logger.info("success..")
         generatorDB.session.commit()    
-        # logger.info("COMMITTED")
+        logger.info(f"Successfully inserted results for jobID {job_id}")

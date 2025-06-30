@@ -13,16 +13,14 @@ def main():
     load_dotenv()
     logger = initLogger("main")
     generatorDB.connect_db()
-    generatorDB.reset_all_tables()
-
-    overpassApiClient.get_node_by_id("52246524")
+    # generatorDB.reset_all_tables()
 
     # # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
     resultRepo = ResultRepoImpl()
     worker = WorkerImpl(jobRepo, resultRepo)
 
-    # consume_queue(worker) # blocking
+    consume_queue(worker) # blocking
 
 if __name__ == '__main__':
     try:
@@ -34,7 +32,7 @@ if __name__ == '__main__':
         except SystemExit:
            os._exit(0) 
     except Exception as e:
-        print("ERROR", e)
+        print("Exited with error", e)
         try:
             sys.exit(0) # exit with no problems
         except SystemExit:

@@ -9,7 +9,7 @@ from domain.shared.place_data import PlaceData
 
 class SemanticFilterer(ABC):
     @abstractmethod
-    def filter(self, desc: str, data: list[PlaceData]) -> list[str]:
+    def filter(self, desc: str, data: list[PlaceData], limit: int) -> list[str]:
         pass
 
 class SemanticFiltererImpl(SemanticFilterer):
@@ -17,7 +17,7 @@ class SemanticFiltererImpl(SemanticFilterer):
         self.embedder = embedder
 
     # returns a list of nodeIDs
-    def filter(self, desc: str, data: list[PlaceData]) -> list[str]:
+    def filter(self, desc: str, data: list[PlaceData], limit: int) -> list[str]:
         logger = initLogger("SemanticFiltererImpl.filter()")
         logger.info("Filtering...")
         logger.info(f"PROMPT: {desc}")
@@ -69,12 +69,12 @@ class SemanticFiltererImpl(SemanticFilterer):
 
         # Perform a search in the FAISS index for the top 5 similar locations
         # ie. those in the index that match our input embedding the most
-        distances, indices = index.search(embedding, 5)
+        distances, indices = index.search(embedding, limit)
         print(distances, indices)
 
         # Display the results in a readable format
         dateideas = []
-        print("\nTop 5 date ideas:")
+        print(f"\nTop {limit} date ideas:")
         for i in range(len(indices[0])):
             idx = indices[0][i]
             row = df.iloc[idx]

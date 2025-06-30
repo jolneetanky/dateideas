@@ -36,16 +36,13 @@ class WorkerImpl(Worker):
         logger.info(f"Successfully generated date idea")
         logger.info(f"DESC: {desc}")
 
-        res = filterer.filter(desc, data)
+        node_ids = filterer.filter(desc, data, 1)
         logger.info(f"Successfully got matching nodeIDs")
-        logger.info(f"RES: {res}")
+        logger.info(f"NODEIDs: {node_ids}")
 
-        mock_results = [
-            1,
-            2,
-            4,
-        ]
-        self.resultRepo.insert_results(job_id, mock_results)
+        self.resultRepo.insert_results(job_id=job_id, desc=desc, node_ids=node_ids)
+
+        # self.resultRepo.insert_results(job_id, mock_results)
 
         try:
             self.jobRepo.update_job(job_id, Status.SUCCESS)
