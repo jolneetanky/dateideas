@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
@@ -31,6 +33,10 @@ func (rr ResultRepositoryImpl) GetResultsByJobId(jobId uuid.UUID) (results []ent
 
 	if err != nil {
 		return nil, err
+	}
+
+	if len(results) == 0 {
+		return nil, errors.New("not found")
 	}
 
 	return results, nil

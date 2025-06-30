@@ -52,6 +52,7 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 			Error:   serviceErr.Error(),
 			Data:    nil,
 		})
+		return
 	}
 
 	logger.Info(fmt.Sprintf("Successfully get results for jobId %s", jobId))
