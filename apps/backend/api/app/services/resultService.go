@@ -1,10 +1,13 @@
 package services
 
 import (
+	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
 
@@ -30,8 +33,56 @@ func InitResultServiceImpl(resultRepo repositories.ResultRepositoryImpl) ResultS
 	return ResultServiceImpl{resultRepo: resultRepo}
 }
 
-func GetNodesById(id string) {
-	logger.Info(fmt.Sprintf("Getting nodes by ID %s", id))
+func FormatNode(node *overpass.Node) resource.DateLocation {
+
+	id := strconv.FormatInt(node.ID, 10)
+	lat := node.Lat
+	lon := node.Lon
+	name := node.Tags["name"]
+	amenity := node.Tags["amenity"]
+	street := node.Tags["addr:street"]
+	city := node.Tags["addr:city"]
+	houseNumber := node.Tags["addr:housenumber"]
+	floor := node.Tags["addr:floor"]
+	unit := node.Tags["addr:unit"]
+
+	// Some nodes use "website", others might use "contact:website" or "url"
+	// link := node.Tags["website"]
+	// if link == "" {
+	// 	link = node.Tags["contact:website"]
+	// }
+	// if link == "" {
+	// 	link = node.Tags["url"]
+	// }
+	query := ""
+	if name != "" && street != "" {
+		query += name + ", " + street
+	}
+
+	var formattedQuery string
+	if query != "" {
+		formattedQuery = url.QueryEscape(query)
+	} else {
+		lat := fmt.Sprintf("%v", lat)
+		lon := fmt.Sprintf("%v", lon)
+		formattedQuery = url.QueryEscape(lat + "," + lon)
+	}
+
+	gmapsLink := fmt.Sprintf("https://google.com/maps/search/?api=1&query=%s", formattedQuery)
+
+	address := fmt.Sprintf("%s, %s, %s, %s, %s", street, city, houseNumber, floor, unit)
+
+	return resource.DateLocation{
+		Id:      id,
+		Name:    name,
+		Amenity: amenity,
+		Link:    gmapsLink,
+		Address: address,
+	}
+}
+
+func GetNodeById(id string) (node *overpass.Node, err error) {
+	logger.Info(fmt.Sprintf("Getting node by ID %s", id))
 	// Create a new Overpass client
 	client := overpass.New() // Or your self-hosted Overpass instance
 
@@ -48,6 +99,7 @@ func GetNodesById(id string) {
 	logger.Info(fmt.Sprintf("RESULT: %+v", result))
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error executing Overpass query: %v", err))
+		return nil, err
 	}
 
 	// Process the results
@@ -59,38 +111,47 @@ func GetNodesById(id string) {
 
 	node, ok := result.Nodes[idInt]
 	if !ok {
-		logger.Error("Node not found in result")
+		logger.Error("Node not found in overpass")
+		return nil, errors.New("node not found in overpass")
 	} else {
 		logger.Info(fmt.Sprintf("Node found: %+v", node))
+		return node, nil
 	}
-	logger.Info(fmt.Sprintf("%v", node))
-	// fmt.Printf("Tags: %v", node.Tags)
-	// fmt.Printf("Found %d elements:\n", len(result.Nodes))
-	// for _, el := range result.Elements {
-	// 	fmt.Printf("  Type: %s, ID: %d, Tags: %v\n", el.Type, el.ID, el.Tags)
-	// }
 }
 
-func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (nodeIds []string, err error) {
+func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (result resource.DateIdea, err error) {
 	logger.Info(fmt.Sprintf("Getting results for job ID: %s", jobId))
 
 	results, err := rs.resultRepo.GetResultsByJobId(jobId)
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error getting results for job ID %s: %s", jobId, err.Error()))
-		return nil, err
+		return resource.DateIdea{}, err
 	}
 
 	// Extract nodeIDs
-	nodeIds = make([]string, len(results))
-	// nodes := make([]string, len(results))
+	nodeIds := make([]string, len(results))
+	locations := make([]resource.DateLocation, len(results))
 	for i, res := range results {
 		nodeIds[i] = res.NodeID
-		GetNodesById(res.NodeID)
+		node, err := GetNodeById(res.NodeID)
+
+		if err != nil {
+			return resource.DateIdea{}, err
+		}
+
+		formattedNode := FormatNode(node)
+		logger.Info(fmt.Sprintf("FORMATTED NODE: %+v", formattedNode))
+		locations[i] = formattedNode
+	}
+
+	result = resource.DateIdea{
+		Description:   results[0].Description,
+		DateLocations: locations,
 	}
 
 	// TODO: fetch from overpass API
 
-	return nodeIds, nil
+	return result, nil
 
 }

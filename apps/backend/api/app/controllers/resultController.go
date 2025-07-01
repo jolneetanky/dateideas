@@ -42,7 +42,7 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 		return
 	}
 
-	dateIdeaIds, serviceErr := rc.service.GetResultsByJobId(formattedJobId)
+	dateIdea, serviceErr := rc.service.GetResultsByJobId(formattedJobId)
 
 	if serviceErr != nil {
 		logger.Info(fmt.Sprintf("Error getting results by jobID: %s", serviceErr.Error()))
@@ -56,11 +56,11 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("Successfully get results for jobId %s", jobId))
-	c.JSON(http.StatusOK, resource.ApiResponse[[]string]{
+	c.JSON(http.StatusOK, resource.ApiResponse[resource.DateIdea]{
 		Status:  resource.Success,
 		Message: "Successfully fetch results",
 		Error:   "",
-		Data:    dateIdeaIds,
+		Data:    dateIdea,
 	})
 
 	// pass to result DB, get paginated
