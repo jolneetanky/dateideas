@@ -16,16 +16,12 @@ import (
 
 // Define interface
 type ResultService interface {
-	// TODO: return a list of dateideaids for now
-	// then from those dateideaids, fetch the dateideas
-	// FINAL: return a paginated list of DateIdeas.
 	GetResultsByJobId(jobId uuid.UUID) (dateIdeaIds []string, err error)
 }
 
 // Define implementation struct
 type ResultServiceImpl struct {
 	resultRepo repositories.ResultRepositoryImpl
-	// dateideasrepo
 }
 
 // Constructor to initialize GeneratorServiceImpl
@@ -46,14 +42,6 @@ func FormatNode(node *overpass.Node) resource.DateLocation {
 	floor := node.Tags["addr:floor"]
 	unit := node.Tags["addr:unit"]
 
-	// Some nodes use "website", others might use "contact:website" or "url"
-	// link := node.Tags["website"]
-	// if link == "" {
-	// 	link = node.Tags["contact:website"]
-	// }
-	// if link == "" {
-	// 	link = node.Tags["url"]
-	// }
 	query := ""
 	if name != "" && street != "" {
 		query += name + ", " + street
@@ -149,8 +137,6 @@ func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID) (result resource.
 		Description:   results[0].Description,
 		DateLocations: locations,
 	}
-
-	// TODO: fetch from overpass API
 
 	return result, nil
 

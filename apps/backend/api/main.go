@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -41,23 +43,21 @@ func main() {
 
 	router := gin.Default()
 
+	// Enable CORS
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	router.POST("/generator/generate", generatorController.Generate)
 
-	router.GET("/jobs/status/:jobId", jobController.GetStatus)
+	router.GET("/generator/status/:jobId", jobController.GetStatus)
 
-	router.GET("/results/:jobId", resultController.GetResultsByJobId)
-
-	// get results
-	// where do we store these results?
-	// OPTION #1:
-	// Yea I think this makes the most sense.
-	// store in a result table, with { jobId: dateIdeaId }
-	// then to get all dateIdeas for a jobId,
-	// we can have an aggregator to fetch all these dateIdeaIds from a separate DB
-	// and piece it tgt
-
-	// we can index by `jobId`, then paginate from there.
-	// I think it's best to have a separate Paginator to paginate our results.
+	router.GET("/generator/results/:jobId", resultController.GetResultsByJobId)
 
 	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
 }
