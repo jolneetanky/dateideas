@@ -34,12 +34,12 @@ export const useInputBar = () => {
   } = useMutation({
     mutationFn: async () => {
       const {
-        type,
+        status,
         data: jobId,
         error,
       } = await generatorClient.generate(inputValue);
 
-      if (type === "error" || !jobId) {
+      if (status === "error" || !jobId) {
         throw new Error(error); // i think this causes `isError` to be true?
       }
       return jobId;
@@ -88,6 +88,23 @@ export const useFetchGeneratedIdeasPage = (
   const { data: generatorClientResponse, isLoading: loading } = useQuery({
     queryKey: [page, jobId],
     queryFn: async () => await generatorClient.getPage(jobId, page),
+  });
+
+  return {
+    data: generatorClientResponse?.data ?? null,
+    loading,
+    error: generatorClientResponse?.error ?? "",
+  };
+};
+
+export const useFetchDateIdea = (jobId: string): UseFetchResponse<DateIdea> => {
+  const log = initLogger("[useFetchDateIdea");
+
+  log.info(`Fetching date ideas for job ID ${jobId}`);
+
+  const { data: generatorClientResponse, isLoading: loading } = useQuery({
+    queryKey: [jobId],
+    queryFn: async () => await generatorClient.getDateIdea(jobId),
   });
 
   return {

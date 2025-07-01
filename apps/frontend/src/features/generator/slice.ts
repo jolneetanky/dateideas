@@ -48,9 +48,13 @@ export const generateDateIdeas = createAsyncThunk<
     },
     { rejectWithValue }
   ) => {
-    const { type, data: jobId, error } = await generatorClient.generate(prompt);
+    const {
+      status,
+      data: jobId,
+      error,
+    } = await generatorClient.generate(prompt);
     console.log("[generator.slice.generateDateIdeas]", prompt, jobId);
-    if (type === "success") {
+    if (status === "success") {
       return jobId as string;
     } else {
       return rejectWithValue(error);
@@ -60,6 +64,7 @@ export const generateDateIdeas = createAsyncThunk<
 
 // get page using current job ID
 // thunk action creator
+// UNUSED; can delete lol
 export const getGeneratedIdeasPage = createAsyncThunk<
   Paginated<DateIdea>, // Payload type of `fulfilled` action,
   {
@@ -97,12 +102,12 @@ export const getGeneratedIdeasPage = createAsyncThunk<
     }
 
     const {
-      type,
+      status,
       data: dateIdeasPage,
       error,
     } = await generatorClient.getPage(jobId, page);
     console.log("[generator.slice.getGeneratedIdeasPage] PAGE", dateIdeasPage);
-    if (type === "success") {
+    if (status === "success") {
       return dateIdeasPage as Paginated<DateIdea>;
     } else {
       return rejectWithValue(error);

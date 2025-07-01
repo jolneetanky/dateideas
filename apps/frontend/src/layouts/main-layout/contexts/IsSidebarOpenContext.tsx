@@ -44,7 +44,6 @@ const IsSidebarOpenProvider = ({
 // Hook to access context
 const useIsSidebarOpenCtx = () => {
   const log = initLogger("[useIsSidebarOpen]");
-  log.info("heyyy");
   return useContext(IsSidebarOpenContext);
 };
 

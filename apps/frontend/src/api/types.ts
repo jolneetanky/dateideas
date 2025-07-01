@@ -6,8 +6,8 @@
  * @property {string} error - The error message, if any. * @property {
  */
 export type ApiResponse<T> = {
-    status: "success" | "error",
-    message: string,
-    data: T | null,
-    error: string,
-}
+  status: "success" | "error";
+  message: string;
+  data: T | null;
+  error: string;
+};

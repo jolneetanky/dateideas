@@ -20,7 +20,7 @@ class DateIdeaClient extends ApiClient<DateIdea> {
     //     error: error,
     //   };
     return {
-      type: "success",
+      status: "success",
       data: null,
       error: "",
     };

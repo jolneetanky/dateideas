@@ -1,10 +1,11 @@
 "use client";
-import { DateIdeaList } from "@/features/dateidea/components";
+import { DateLocationList } from "@/features/dateidea/components";
 import {
   GeneratedIdeasPageNav,
   InputBar,
 } from "@/features/generator/components";
 import {
+  useFetchDateIdea,
   useFetchGeneratedIdeasPage,
   useInputBar,
 } from "@/features/generator/hooks";
@@ -42,27 +43,31 @@ const HomePageStyle = {
 };
 
 export default function HomePage() {
-  // const { page } = useGeneratedIdeasPageCtx();
   const jobId = useAppSelector(selectJobId);
   const page = useAppSelector(selectGeneratedIdeasPageNumber);
   const status = useAppSelector(selectGeneratedIdeasStatus);
-  // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
-  // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
-  // ensuring that `data`, `loading`, `error` changes when `page` changes.
+
   const {
     inputValue,
     handleChange,
     handleSubmit,
     isPending: generationLoading,
-    error: _generationError,
+    error: generationError,
   } = useInputBar();
 
+  // const {
+  //   data: generatedIdeasPage,
+  //   loading: _loading,
+  //   error: _error,
+  // } = useFetchGeneratedIdeasPage(page, jobId);
+  // const dateideas = generatedIdeasPage?.data;
   const {
-    data: generatedIdeasPage,
-    loading: _loading,
-    error: _error,
-  } = useFetchGeneratedIdeasPage(page, jobId);
-  const dateideas = generatedIdeasPage?.data;
+    data: dateIdea,
+    loading: dateIdeaLoading,
+    error: dateIdeaError,
+  } = useFetchDateIdea(jobId);
+  const description = dateIdea?.description;
+  const locations = dateIdea?.dateLocations;
 
   return (
     <div style={HomePageStyle.container} className="flex-col">
@@ -75,15 +80,25 @@ export default function HomePage() {
       </div>
 
       <div style={HomePageStyle.dateIdeaListWrapper}>
-        {generationLoading ? (
-          <>Generating...</>
-        ) : (
-          <DateIdeaList dateideas={dateideas ?? []} />
-        )}
+        {(generationLoading || dateIdeaLoading) && <>Generating...</>}
+
+        {!generationLoading &&
+          !dateIdeaLoading &&
+          generationError == "" &&
+          dateIdeaError == "" && (
+            <>
+              {description}
+              <DateLocationList locations={locations ?? []} />
+            </>
+          )}
+
+        {generationError != "" && <>{generationError}</>}
+
+        {dateIdeaError != "" && <>{dateIdeaError}</>}
       </div>
 
       <div style={HomePageStyle.pageNavWrapper} className="fixed">
-        {dateideas?.length == 0 || status == "idle" ? (
+        {locations?.length == 0 || status == "idle" ? (
           <></>
         ) : (
           <GeneratedIdeasPageNav />

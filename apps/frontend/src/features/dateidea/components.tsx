@@ -1,14 +1,13 @@
 "use client";
-import { DateIdea } from "./types";
+import { DateIdea, DateLocation } from "./types";
 import { List } from "@mantine/core";
 
-const DateIdeaCard = ({ dateidea }: { dateidea: DateIdea }) => {
+const DateLocationCard = ({ location }: { location: DateLocation }) => {
   return (
     <div>
-      {dateidea.title}
-      {dateidea.description}
-      {dateidea.budget}
-      {dateidea.tags}
+      {location.name}
+      {location.amenity}
+      {location.address}
     </div>
   );
   // return (
@@ -38,14 +37,15 @@ const DateIdeaCard = ({ dateidea }: { dateidea: DateIdea }) => {
   // );
 };
 
-const DateIdeaList = ({ dateideas }: { dateideas: DateIdea[] }) => {
+const DateLocationList = ({ locations }: { locations: DateLocation[] }) => {
+  console.log("LOCATIONS:", locations);
   return (
     <List className="flex flex-col items-center justify-center h-full w-full">
-      {dateideas.map((item) => (
-        <DateIdeaCard dateidea={item} key={item.id} />
+      {locations.map((item) => (
+        <DateLocationCard location={item} key={item.id} />
       ))}
     </List>
   );
 };
 
-export { DateIdeaCard, DateIdeaList };
+export { DateLocationCard, DateLocationList };

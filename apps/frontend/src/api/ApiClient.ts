@@ -1,5 +1,5 @@
 export type ApiClientResponse<T> = {
-  type: "success" | "error";
+  status: "success" | "error";
   data: T | null;
   error: string;
 };
