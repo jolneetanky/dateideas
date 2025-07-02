@@ -6,7 +6,7 @@ class Embedder:
     # Embeds a single input string.
     def embed(self, input: str) -> list[float]:
         logger = initLogger("Embedder.embed()")
-        logger.info("EMBEDDING...")
+        logger.info(f"EMBEDDING... INPUT: {input}")
         HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
         PROVIDER = "hf-inference"
         MODEL = "intfloat/multilingual-e5-large-instruct"
@@ -16,12 +16,10 @@ class Embedder:
             api_key=HF_TOKEN,
         )
 
-        logger.info(f"HELLO... {input}")
         result = client.feature_extraction(
             input,
             model=MODEL,
         )
-        logger.info("AFTER")
         return result
 
 def initEmbedder() -> Embedder:

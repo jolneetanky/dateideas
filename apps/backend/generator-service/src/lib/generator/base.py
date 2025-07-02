@@ -39,8 +39,6 @@ Date idea:
             "model": "mistralai/mistral-7b-instruct"
         })
 
-        logger.info(f"RES: {response}")
-        
         content = response["choices"][0]["message"]["content"]
         return content
 

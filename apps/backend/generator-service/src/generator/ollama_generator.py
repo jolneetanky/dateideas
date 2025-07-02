@@ -61,9 +61,6 @@ class GeneratorImpl(Generator):
         # Generate and display recommendations
         logger.info(f"PROMPT: {prompt}")
 
-        for guy in data:
-            print("JUST A TEST", guy["tags"].get("name", ""))
-
         df = pd.DataFrame(data)
 
         # Apply the function to create a new column with combined features

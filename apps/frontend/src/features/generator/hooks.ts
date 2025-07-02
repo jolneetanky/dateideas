@@ -105,6 +105,7 @@ export const useFetchDateIdea = (jobId: string): UseFetchResponse<DateIdea> => {
   const { data: generatorClientResponse, isLoading: loading } = useQuery({
     queryKey: [jobId],
     queryFn: async () => await generatorClient.getDateIdea(jobId),
+    enabled: jobId != "",
   });
 
   return {

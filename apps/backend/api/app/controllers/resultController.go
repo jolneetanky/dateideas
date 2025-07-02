@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -27,6 +28,37 @@ func InitResultControllerImpl(service services.ResultServiceImpl) ResultControll
 func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	logger.Info("Getting results for jobId")
 	jobId := c.Param("jobId")
+
+	// Parse query params with default values
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "10")
+
+	page, err := strconv.Atoi(pageStr)
+
+	if err != nil || page < 1 {
+		logger.Info(fmt.Sprintf("Invalid page: %s", err.Error()))
+		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
+			Status:  resource.Error,
+			Message: fmt.Sprintf("Invalid page number"),
+			Error:   err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		logger.Info(fmt.Sprintf("Invalid limit: %s", err.Error()))
+		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
+			Status:  resource.Error,
+			Message: fmt.Sprintf("Invalid limit"),
+			Error:   err.Error(),
+			Data:    nil,
+		})
+		return
+	}
+
+	logger.Info(fmt.Sprintf("PAGE: %d, LIMIT: %d", page, limit))
 
 	// format to uuid
 	formattedJobId, parseErr := uuid.Parse(jobId)

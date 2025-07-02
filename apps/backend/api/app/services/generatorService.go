@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/repositories"
@@ -56,13 +57,14 @@ func (gs GeneratorServiceImpl) Generate(prompt string, location string, budget i
 	}
 
 	// parse into UUID
-	// id, _ := utils.ParseUUID(jobId)
-	// // Insert into job repo
-	// postErr := gs.jobRepo.PostJob(id, entity.JobStatusPending)
+	id, _ := utils.ParseUUID(jobId)
+	// Insert into job repo
+	logger.Info(fmt.Sprintf("Inserting jobID %s into JobDB...", id))
+	postErr := gs.jobRepo.PostJob(id, entity.JobStatusPending)
 
-	// if postErr != nil {
-	// 	return "", postErr
-	// }
+	if postErr != nil {
+		return "", postErr
+	}
 
 	// Send job ID
 	// First check if connection is open. If not open, create new connection

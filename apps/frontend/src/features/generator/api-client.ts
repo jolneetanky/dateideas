@@ -36,7 +36,7 @@ class GeneratorClient extends ApiClient<DateIdea> {
 
       // await new Promise((resolve) => setTimeout(resolve, 3000));
       // Polling logic
-      const timeout = 40000; // 60 seconds max wait
+      const timeout = 40000; // 40 seconds max wait
       const interval = 3000; // poll every 3 seconds
       const start = Date.now();
 

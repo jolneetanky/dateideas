@@ -33,6 +33,7 @@ func (jr JobRepositoryImpl) GetStatus(jobId uuid.UUID) (status entity.JobStatus,
 	err = jr.db.Where(&entity.Job{ID: jobId}, "id").First(&job).Error
 
 	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to get status for jobID %s", jobId))
 		return "", err
 	}
 

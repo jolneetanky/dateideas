@@ -22,9 +22,7 @@ class SemanticFiltererImpl(SemanticFilterer):
         logger.info("Filtering...")
         logger.info(f"PROMPT: {desc}")
 
-        for guy in data:
-            print("JUST A TEST", guy.tags.get("name", ""))
-
+        ''''''
         df = pd.DataFrame(data)
 
         # Apply the function to create a new column with combined features
@@ -112,22 +110,3 @@ def combine_features(row):
     longitude: {row.get("lon", 0.0)},
     tags: {row.get("tags", {})}
     """
-
-# def embed(input: str) -> list[float]:
-#     logger = initLogger("generator.ollama_generator.embed()")
-#     logger.info("EMBEDDING...")
-#     HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
-#     PROVIDER = "hf-inference"
-#     MODEL = "intfloat/multilingual-e5-large-instruct"
-#     # logger.info("Embedding...")
-
-#     client = InferenceClient(
-#         provider=PROVIDER,
-#         api_key=HF_TOKEN,
-#     )
-
-#     result = client.feature_extraction(
-#         input,
-#         model=MODEL,
-#     )
-#     return result

@@ -7,18 +7,23 @@ from lib.rabbitmq import consume_queue
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
 from dotenv import load_dotenv
-from initializers.main import overpassApiClient
+from initializers.main import overpassApiClient, vectorDB, embedder
+from domain.shared.place_data import VectoredPlaceData
+from utils.main import stringifyPlaceData
 
 def main():
     load_dotenv()
     logger = initLogger("main")
     generatorDB.connect_db()
-    # generatorDB.reset_all_tables()
+    # nodes = overpassApiClient.gather_data("Pasir Ris")[:20]
+    # vectored_nodes = map(lambda x: VectoredPlaceData(x.id, x.lat, x.lon, x.tags, embedder.embed(stringifyPlaceData(x))), nodes)
+    vectorDB.initDB()
+    # vectorDB.upsertNodes(vectored_nodes)
 
-    # # Internal objects
+    # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
     resultRepo = ResultRepoImpl()
-    worker = WorkerImpl(jobRepo, resultRepo)
+    worker = WorkerImpl(jobRepo, resultRepo, vectorDB, embedder)
 
     consume_queue(worker) # blocking
 

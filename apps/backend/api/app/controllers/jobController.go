@@ -45,7 +45,7 @@ func (jc JobControllerImpl) GetStatus(c *gin.Context) {
 		logger.Info(fmt.Sprintf("Error binding request: %s", err.Error()))
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
-			Message: "Failed to fetch status",
+			Message: fmt.Sprintf("Failed to fetch status for jobID %s", id),
 			Error:   err.Error(),
 			Data:    nil,
 		})

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
-import HomePage from "@/views/HomePage/HomePage";
+import HomePage from "@/views/HomePage";
 import { useFetch } from "../../../__mocks__/features/dateidea/hooks.mock";
 
 // Mock it outside to track calls
