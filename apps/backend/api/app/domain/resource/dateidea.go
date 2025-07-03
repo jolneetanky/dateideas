@@ -12,3 +12,8 @@ type DateIdea struct {
 	Description   string         `json:"description"`
 	DateLocations []DateLocation `json:"date_locations"`
 }
+
+type CursorResponse[T any] struct {
+	Data       T      `json:"data"`
+	NextCursor string `json:"next_cursor"`
+}

@@ -26,20 +26,35 @@ func InitResultControllerImpl(service services.ResultServiceImpl) ResultControll
 
 // implement methods
 func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
-	logger.Info("Getting results for jobId")
 	jobId := c.Param("jobId")
-
 	// Parse query params with default values
-	pageStr := c.DefaultQuery("page", "1")
+	// pageStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "10")
+	afterStr := c.DefaultQuery("after", "0")
 
-	page, err := strconv.Atoi(pageStr)
+	logger.Info(fmt.Sprintf("[GET /api/generator/results/:jobId] Fetching results for jobID %s. AFTER: %s, LIMIT: %s", jobId, afterStr, limitStr))
 
-	if err != nil || page < 1 {
+	// page, err := strconv.Atoi(pageStr)
+
+	// if err != nil || page < 1 {
+	// 	logger.Info(fmt.Sprintf("Invalid page: %s", err.Error()))
+	// 	c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
+	// 		Status:  resource.Error,
+	// 		Message: fmt.Sprintf("Invalid page number: %s", pageStr),
+	// 		Error:   err.Error(),
+	// 		Data:    nil,
+	// 	})
+	// 	return
+	// }
+
+	afterUint64, err := strconv.ParseUint(afterStr, 10, 64)
+	after := uint(afterUint64)
+
+	if err != nil || after < 0 {
 		logger.Info(fmt.Sprintf("Invalid page: %s", err.Error()))
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
-			Message: fmt.Sprintf("Invalid page number"),
+			Message: fmt.Sprintf("Invalid page number: %s", afterStr),
 			Error:   err.Error(),
 			Data:    nil,
 		})
@@ -51,16 +66,14 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 		logger.Info(fmt.Sprintf("Invalid limit: %s", err.Error()))
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
-			Message: fmt.Sprintf("Invalid limit"),
+			Message: fmt.Sprintf("Invalid limit: %s", limitStr),
 			Error:   err.Error(),
 			Data:    nil,
 		})
 		return
 	}
 
-	logger.Info(fmt.Sprintf("PAGE: %d, LIMIT: %d", page, limit))
-
-	// format to uuid
+	// format to jobId to uuid
 	formattedJobId, parseErr := uuid.Parse(jobId)
 
 	if parseErr != nil {
@@ -74,7 +87,18 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 		return
 	}
 
-	dateIdea, serviceErr := rc.service.GetResultsByJobId(formattedJobId)
+	// get results from resultservice
+
+	// VERSION #1: Uncomment to see performance without batching requests
+	// dateIdea, serviceErr := rc.service.GetResultsByJobIdPrev(formattedJobId)
+
+	// VERSION #2: Uncomment to see performance with batching requests
+	dateIdea, nextCursor, serviceErr := rc.service.GetResultsByJobId(formattedJobId, after, limit)
+
+	data := resource.CursorResponse[resource.DateIdea]{
+		Data:       dateIdea,
+		NextCursor: fmt.Sprintf("%d", nextCursor),
+	}
 
 	if serviceErr != nil {
 		logger.Info(fmt.Sprintf("Error getting results by jobID: %s", serviceErr.Error()))
@@ -88,37 +112,11 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	}
 
 	logger.Info(fmt.Sprintf("Successfully get results for jobId %s", jobId))
-	c.JSON(http.StatusOK, resource.ApiResponse[resource.DateIdea]{
+	c.JSON(http.StatusOK, resource.ApiResponse[resource.CursorResponse[resource.DateIdea]]{
 		Status:  resource.Success,
 		Message: "Successfully fetch results",
 		Error:   "",
-		Data:    dateIdea,
+		Data:    data,
 	})
 
-	// pass to result DB, get paginated
-	// TODO: populate resultDB with mock results for some `jobId`
-	// logger.Info("Getting job status")
-	// jobId := c.Param("jobId") // check if is UUID
-
-	// // pass to service
-	// status, err := jc.service.GetStatus(jobId)
-
-	// if err != nil {
-	// 	logger.Info(fmt.Sprintf("Error binding request: %s", err.Error()))
-	// 	c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
-	// 		Status:  resource.Error,
-	// 		Message: "Failed to fetch status",
-	// 		Error:   err.Error(),
-	// 		Data:    nil,
-	// 	})
-	// 	return
-	// }
-
-	// logger.Info(fmt.Sprintf("Successfully get status for jobId %s", jobId))
-	// c.JSON(http.StatusBadRequest, resource.ApiResponse[string]{
-	// 	Status:  resource.Success,
-	// 	Message: "Successfully fetch status",
-	// 	Error:   "",
-	// 	Data:    status,
-	// })
 }
