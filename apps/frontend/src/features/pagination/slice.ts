@@ -3,11 +3,13 @@ import { RootState } from "@/lib/redux/store";
 
 // STATE INTERFACE
 interface PaginationState {
+  curCursor: string;
   nextCursor: string;
 }
 
 // INITIAL STATE
 const initialState: PaginationState = {
+  curCursor: "0",
   nextCursor: "0",
 };
 
@@ -19,13 +21,17 @@ const paginationSlice = createSlice({
     nextCursorChanged(state, action: PayloadAction<string>) {
       state.nextCursor = action.payload;
     },
+    curCursorChanged(state, action: PayloadAction<string>) {
+      state.curCursor = action.payload;
+    },
   },
 });
 
 // Export ACTION CREATORS
-export const { nextCursorChanged } = paginationSlice.actions;
+export const { nextCursorChanged, curCursorChanged } = paginationSlice.actions;
 // Export REDUCERS
 export const paginationReducer = paginationSlice.reducer;
 // Export SELECTORS
 export const selectNextCursor = (state: RootState) =>
   state.pagination.nextCursor;
+export const selectCurCursor = (state: RootState) => state.pagination.curCursor;

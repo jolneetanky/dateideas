@@ -12,7 +12,8 @@ import {
 } from "@/features/generator/slice";
 import { LoadMore } from "@/features/pagination/components";
 import {
-  nextCursorChanged,
+  curCursorChanged,
+  selectCurCursor,
   selectNextCursor,
 } from "@/features/pagination/slice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
@@ -47,7 +48,8 @@ export default function HomePage() {
   const jobId = useAppSelector(selectJobId);
   // const page = useAppSelector(selectGeneratedIdeasPageNumber);
   const status = useAppSelector(selectGeneratedIdeasStatus);
-  const cursor = useAppSelector(selectNextCursor);
+  const nextCursor = useAppSelector(selectNextCursor);
+  const curCursor = useAppSelector(selectCurCursor);
 
   const {
     inputValue,
@@ -61,14 +63,16 @@ export default function HomePage() {
     data: dateIdea,
     loading: dateIdeaLoading,
     error: dateIdeaError,
-  } = useFetchDateIdea(jobId, cursor);
+  } = useFetchDateIdea(jobId, curCursor);
   const description = dateIdea?.description;
   const locations = dateIdea?.dateLocations;
 
   const dispatch = useAppDispatch();
   const handleLoadMore = () => {
     console.log("LOAD MORE");
-    dispatch(nextCursorChanged(cursor));
+    // dispatch(nextCursorChanged(cursor));
+    console.log("HELLO", nextCursor);
+    dispatch(curCursorChanged(nextCursor));
   };
 
   return (
