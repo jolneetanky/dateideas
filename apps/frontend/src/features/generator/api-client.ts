@@ -1,11 +1,14 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
-import { ApiDateIdea, DateIdea } from "../dateidea/types";
-import { Paginated } from "../pagination/types";
-import mockGeneratorApi from "@/api/generator-api";
+import { JsonDateIdea, DateIdea } from "../dateidea/types";
 import axios from "axios";
 import { GenerateIdeasReq } from "./types";
 import { initLogger } from "@/lib/logger";
-import { ApiResponse } from "@/api/types";
+import {
+  ApiCursorResponse,
+  ApiClientCursorResponse,
+  ApiResponse,
+} from "@/api/types";
+import next from "next";
 
 const API_BASE_URL = "http://localhost:8000";
 class GeneratorClient extends ApiClient<DateIdea> {
@@ -24,7 +27,7 @@ class GeneratorClient extends ApiClient<DateIdea> {
     const body: GenerateIdeasReq = {
       prompt: prompt,
       location: location,
-      // budget: budget,
+      budget: budget,
     };
     try {
       const response = await axios.post<ApiResponse<string>>(
@@ -78,29 +81,17 @@ class GeneratorClient extends ApiClient<DateIdea> {
     // TODO: incorporate polling logic.
   }
 
-  async getPage(
+  async getResult(
     jobId: string,
-    page: number
-  ): Promise<ApiClientResponse<Paginated<DateIdea>>> {
-    console.log("[generator.apiClient.getPage]");
-    const { data, status, error } = await mockGeneratorApi.getPage(jobId, page);
-    // ACTUAL: get dateideas from BE
-    // format into mock page for now (cause BE dh pagination yet)
-
-    return {
-      status: status,
-      data: data,
-      error: error,
-    };
-  }
-
-  async getDateIdea(jobId: string): Promise<ApiClientResponse<DateIdea>> {
+    after?: string,
+    limit?: number
+  ): Promise<ApiClientResponse<ApiClientCursorResponse<DateIdea>>> {
     console.log("[generator.apiClient.getDateIdea]");
 
     try {
-      const response = await axios.get<ApiResponse<ApiDateIdea>>(
-        `${API_BASE_URL}/generator/results/${jobId}`
-      );
+      const response = await axios.get<
+        ApiResponse<ApiCursorResponse<JsonDateIdea>>
+      >(`${API_BASE_URL}/generator/results/${jobId}`);
       const { data, message, status, error } = response.data;
       console.log(
         `[generator.apiClient.getDateIdea] Successfully fetched date idea for jobID ${jobId}`
@@ -109,13 +100,20 @@ class GeneratorClient extends ApiClient<DateIdea> {
 
       // format data
       const dateidea: DateIdea = {
-        description: data?.description ?? "",
-        dateLocations: data?.date_locations ?? [],
+        description: data?.data.description ?? "",
+        dateLocations: data?.data.date_locations ?? [],
+      };
+
+      const nextCursor = data?.next_cursor;
+
+      const res: ApiClientCursorResponse<DateIdea> = {
+        data: dateidea,
+        nextCursor: nextCursor ?? "",
       };
 
       return {
         status: status,
-        data: dateidea,
+        data: res,
         error: error,
       };
     } catch (err: any) {

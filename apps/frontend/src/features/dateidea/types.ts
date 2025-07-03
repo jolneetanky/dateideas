@@ -11,7 +11,8 @@ export type DateIdea = {
   dateLocations: DateLocation[];
 };
 
-export type ApiDateIdea = {
+// The JSON type returned by our API
+export type JsonDateIdea = {
   description: string;
   date_locations: DateLocation[];
 };

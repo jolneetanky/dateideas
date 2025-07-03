@@ -1,16 +1,13 @@
 import { initLogger } from "@/lib/logger";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import {
-  generatedIdeasPageNumberChanged,
-  generatedIdeasStatusChanged,
-  jobIdChanged,
-} from "./slice";
+import { generatedIdeasStatusChanged, jobIdChanged } from "./slice";
+import { nextCursorChanged } from "../pagination/slice";
 import { UseFetchResponse } from "@/common/types/hooks";
-import { Paginated } from "../pagination/types";
 import { DateIdea } from "../dateidea/types";
 import generatorClient from "./api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import next from "next";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
@@ -45,7 +42,6 @@ export const useInputBar = () => {
       return jobId;
     },
     onSuccess: (jobId) => {
-      dispatch(generatedIdeasPageNumberChanged(1));
       dispatch(jobIdChanged(jobId));
       dispatch(generatedIdeasStatusChanged("success"));
       log.info(`Successfully generated date ideas, jobID: ${jobId}`);
@@ -77,39 +73,36 @@ export const useInputBar = () => {
   };
 };
 
-export const useFetchGeneratedIdeasPage = (
-  page: number,
-  jobId: string
-): UseFetchResponse<Paginated<DateIdea>> => {
-  const log = initLogger("[useFetchGeneratedIdeasPage");
-
-  log.info(`Fetching page ${page} for job ID ${jobId}`);
-
-  const { data: generatorClientResponse, isLoading: loading } = useQuery({
-    queryKey: [page, jobId],
-    queryFn: async () => await generatorClient.getPage(jobId, page),
-  });
-
-  return {
-    data: generatorClientResponse?.data ?? null,
-    loading,
-    error: generatorClientResponse?.error ?? "",
-  };
-};
-
-export const useFetchDateIdea = (jobId: string): UseFetchResponse<DateIdea> => {
+export const useFetchDateIdea = (
+  jobId: string,
+  after?: string,
+  limit?: number
+): UseFetchResponse<DateIdea> => {
   const log = initLogger("[useFetchDateIdea");
-
   log.info(`Fetching date ideas for job ID ${jobId}`);
+  console.log("[useFetchDateIdea]");
 
+  const dispatch = useAppDispatch();
+
+  // will only be called again if `jobId` changes
   const { data: generatorClientResponse, isLoading: loading } = useQuery({
-    queryKey: [jobId],
-    queryFn: async () => await generatorClient.getDateIdea(jobId),
+    queryKey: [jobId, after, limit],
+    queryFn: async () => await generatorClient.getResult(jobId, after, limit),
     enabled: jobId != "",
   });
 
+  const dateidea = generatorClientResponse?.data?.data;
+  const nextCursor = generatorClientResponse?.data?.nextCursor;
+
+  // TODO: store the next cursor
+  useEffect(() => {
+    if (nextCursor != undefined) {
+      dispatch(nextCursorChanged(nextCursor));
+    }
+  }, [generatorClientResponse]);
+
   return {
-    data: generatorClientResponse?.data ?? null,
+    data: dateidea ?? null,
     loading,
     error: generatorClientResponse?.error ?? "",
   };

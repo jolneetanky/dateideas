@@ -1,20 +1,21 @@
 "use client";
 import { DateLocationList } from "@/features/dateidea/components";
-import {
-  GeneratedIdeasPageNav,
-  InputBar,
-} from "@/features/generator/components";
+import { InputBar } from "@/features/generator/components";
 import {
   useFetchDateIdea,
-  useFetchGeneratedIdeasPage,
+  // useFetchGeneratedIdeasPage,
   useInputBar,
 } from "@/features/generator/hooks";
 import {
-  selectGeneratedIdeasPageNumber,
   selectGeneratedIdeasStatus,
   selectJobId,
 } from "@/features/generator/slice";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { LoadMore } from "@/features/pagination/components";
+import {
+  nextCursorChanged,
+  selectNextCursor,
+} from "@/features/pagination/slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
 // TODO: convert to CSS module
 const HomePageStyle = {
@@ -44,8 +45,9 @@ const HomePageStyle = {
 
 export default function HomePage() {
   const jobId = useAppSelector(selectJobId);
-  const page = useAppSelector(selectGeneratedIdeasPageNumber);
+  // const page = useAppSelector(selectGeneratedIdeasPageNumber);
   const status = useAppSelector(selectGeneratedIdeasStatus);
+  const cursor = useAppSelector(selectNextCursor);
 
   const {
     inputValue,
@@ -55,19 +57,19 @@ export default function HomePage() {
     error: generationError,
   } = useInputBar();
 
-  // const {
-  //   data: generatedIdeasPage,
-  //   loading: _loading,
-  //   error: _error,
-  // } = useFetchGeneratedIdeasPage(page, jobId);
-  // const dateideas = generatedIdeasPage?.data;
   const {
     data: dateIdea,
     loading: dateIdeaLoading,
     error: dateIdeaError,
-  } = useFetchDateIdea(jobId);
+  } = useFetchDateIdea(jobId, cursor);
   const description = dateIdea?.description;
   const locations = dateIdea?.dateLocations;
+
+  const dispatch = useAppDispatch();
+  const handleLoadMore = () => {
+    console.log("LOAD MORE");
+    dispatch(nextCursorChanged(cursor));
+  };
 
   return (
     <div style={HomePageStyle.container} className="flex-col">
@@ -97,13 +99,7 @@ export default function HomePage() {
         {dateIdeaError != "" && <>{dateIdeaError}</>}
       </div>
 
-      <div style={HomePageStyle.pageNavWrapper} className="fixed">
-        {locations?.length == 0 || status == "idle" ? (
-          <></>
-        ) : (
-          <GeneratedIdeasPageNav />
-        )}
-      </div>
+      {status == "success" && <LoadMore onClick={handleLoadMore} />}
     </div>
   );
 }

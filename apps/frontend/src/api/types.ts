@@ -11,3 +11,13 @@ export type ApiResponse<T> = {
   data: T | null;
   error: string;
 };
+
+export type ApiCursorResponse<T> = {
+  data: T;
+  next_cursor: string;
+};
+
+export type ApiClientCursorResponse<T> = {
+  data: T;
+  nextCursor: string;
+};

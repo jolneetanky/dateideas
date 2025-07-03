@@ -6,12 +6,6 @@
 // 2) when user clicks "generate", we send all that into to some mock API.
 
 import { Button, TextInput } from "@mantine/core";
-import { PageNav } from "../pagination/components";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import {
-  generatedIdeasPageNumberChanged,
-  selectGeneratedIdeasPageNumber,
-} from "./slice";
 
 const InputBarStyle = {
   container: {
@@ -43,6 +37,7 @@ export const InputBar = ({
   );
 };
 
+/*
 export const GeneratedIdeasPageNav = () => {
   const dispatch = useAppDispatch();
   const curPage = useAppSelector(selectGeneratedIdeasPageNumber);
@@ -59,3 +54,4 @@ export const GeneratedIdeasPageNav = () => {
     />
   );
 };
+*/
