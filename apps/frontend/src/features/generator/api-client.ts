@@ -1,7 +1,7 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { JsonDateIdea, DateIdea } from "../dateidea/types";
 import axios from "axios";
-import { GenerateIdeasReq } from "./types";
+import { GenerateIdeasReq, Location } from "./types";
 import { initLogger } from "@/lib/logger";
 import {
   ApiCursorResponse,
@@ -17,27 +17,50 @@ class GeneratorClient extends ApiClient<DateIdea> {
   // if successful, returns a `jobId` that we can call `generatorClient.getPage()` with.
   async generate(
     prompt: string,
-    location: string = "Singapore",
-    budget: number = -1
+    // location?: Location,
+    locationStr: string | null,
+    budget?: number
   ): Promise<ApiClientResponse<string>> {
-    // const { data, status, error } = await mockGeneratorApi.generate(prompt);
-    const log = initLogger("GeneratorClient.generate()");
-    log.info("GENERATING");
+    console.log(
+      `[GeneratorClient.generate()] Formatting location. Prompt: ${prompt}, LocationStr: ${locationStr}`
+    );
+
+    // Convert string location to lat and lon
+    console.log(
+      `[GeneratorClient.generate()] converting location to lat and lon...`
+    );
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${locationStr}`
+    );
+    const data = await res.json();
+    const lat = parseFloat(data[0].lat);
+    const lon = parseFloat(data[0].lon);
+
+    // TODO: build "location "
+    const location: Location = {
+      lat: lat,
+      lon: lon,
+      radius_km: 50,
+    };
 
     const body: GenerateIdeasReq = {
       prompt: prompt,
-      location: location,
-      budget: budget,
+      ...(locationStr !== null && { location }),
+      ...(budget !== undefined && { budget }),
     };
+
+    console.log(`[GeneratorClient.generate()] Generating... Body`, body);
+
     try {
       const response = await axios.post<ApiResponse<string>>(
         `${API_BASE_URL}/generator/generate`,
         body
       );
       const { data: jobId, message, status, error } = response.data;
-      log.info(`SUCCESSFULLY GENERATED JOB: ${message}`);
+      console.log(
+        `[GeneratorClient.generate()] SUCCESSFULLY GENERATED JOB: ${message}`
+      );
 
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
       // Polling logic
       const timeout = 40000; // 40 seconds max wait
       const interval = 3000; // poll every 3 seconds
@@ -70,7 +93,6 @@ class GeneratorClient extends ApiClient<DateIdea> {
       };
     } catch (err: any) {
       console.log("FAILED TO GENERATE DATE IDEAS", err);
-      log.error(`FAILED TO GENERATE DATE IDEAS: ${err}`);
       return {
         status: "error",
         data: null,
@@ -83,15 +105,16 @@ class GeneratorClient extends ApiClient<DateIdea> {
 
   async getResult(
     jobId: string,
-    after?: string,
-    limit?: number
+    after: string = "0",
+    limit: number = 5
   ): Promise<ApiClientResponse<ApiClientCursorResponse<DateIdea>>> {
     console.log("[generator.apiClient.getDateIdea]");
 
     try {
+      const url = `${API_BASE_URL}/generator/results/${jobId}?after=${after}&limit=${limit}`;
       const response = await axios.get<
         ApiResponse<ApiCursorResponse<JsonDateIdea>>
-      >(`${API_BASE_URL}/generator/results/${jobId}`);
+      >(url);
       const { data, message, status, error } = response.data;
       console.log(
         `[generator.apiClient.getDateIdea] Successfully fetched date idea for jobID ${jobId}`

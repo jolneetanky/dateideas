@@ -14,12 +14,23 @@ export const useInputBar = () => {
 
   const [inputValue, setInputValue] = useState("");
 
+  const [locationVal, setLocationVal] = useState<string | null>("");
+  const handleLocationChange = (val: string | null) => {
+    console.log(`[useInputBar.handleLocatinoChange()]: VAL: ${val}`);
+    setLocationVal(val);
+  };
+
+  // const location = useLocationContext()
+
   // dispatch
   const dispatch = useAppDispatch();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
+
+  // TODO: handle location here
+  // maybe can use some context
 
   // MUTATE
   const {
@@ -34,7 +45,7 @@ export const useInputBar = () => {
         status,
         data: jobId,
         error,
-      } = await generatorClient.generate(inputValue);
+      } = await generatorClient.generate(inputValue, locationVal);
 
       if (status === "error" || !jobId) {
         throw new Error(error); // i think this causes `isError` to be true?
@@ -64,8 +75,10 @@ export const useInputBar = () => {
 
   return {
     inputValue,
+    locationVal,
     handleChange,
     handleSubmit,
+    handleLocationChange,
     isPending,
     isError,
     isSuccess,
@@ -79,7 +92,9 @@ export const useFetchDateIdea = (
   limit?: number
 ): UseFetchResponse<DateIdea> => {
   const log = initLogger("[useFetchDateIdea");
-  log.info(`Fetching date ideas for job ID ${jobId}`);
+  console.log(
+    `[generator.hooks.useFetchDateIdea()] Fetching date ideas for job ID ${jobId}. After: ${after}, Limit: ${limit}`
+  );
   console.log("[useFetchDateIdea]");
 
   const dispatch = useAppDispatch();

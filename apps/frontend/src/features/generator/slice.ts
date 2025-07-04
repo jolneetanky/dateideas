@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux/store";
+import { DateIdea } from "../dateidea/types";
 
 // STATE INTERFACE
 interface GeneratedIdeasState {
@@ -12,39 +13,6 @@ const initialState: GeneratedIdeasState = {
   jobId: "",
   status: "idle",
 };
-
-// THUNKS FOR ASYNC LOGIC
-// thunk to set state of jobId
-// export const generateDateIdeas = createAsyncThunk<
-//   string, // Payload type of `fulfilled` action
-//   {
-//     prompt: string;
-//   }, // Argument types
-//   { rejectValue: string }
-// >(
-//   "generator/generateDateIdeas",
-//   // PAYLOAD CREATOR (ie. the thunk)
-//   async (
-//     {
-//       prompt,
-//     }: {
-//       prompt: string;
-//     },
-//     { rejectWithValue }
-//   ) => {
-//     const {
-//       status,
-//       data: jobId,
-//       error,
-//     } = await generatorClient.generate(prompt);
-//     console.log("[generator.slice.generateDateIdeas]", prompt, jobId);
-//     if (status === "success") {
-//       return jobId as string;
-//     } else {
-//       return rejectWithValue(error);
-//     }
-//   }
-// );
 
 // SLICE. REDUCERS (state, action) => newState DEFINED HERE.
 const generatorSlice = createSlice({

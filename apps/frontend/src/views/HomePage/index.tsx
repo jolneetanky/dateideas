@@ -46,15 +46,16 @@ const HomePageStyle = {
 
 export default function HomePage() {
   const jobId = useAppSelector(selectJobId);
-  // const page = useAppSelector(selectGeneratedIdeasPageNumber);
   const status = useAppSelector(selectGeneratedIdeasStatus);
   const nextCursor = useAppSelector(selectNextCursor);
   const curCursor = useAppSelector(selectCurCursor);
 
   const {
     inputValue,
+    locationVal,
     handleChange,
     handleSubmit,
+    handleLocationChange,
     isPending: generationLoading,
     error: generationError,
   } = useInputBar();
@@ -63,7 +64,7 @@ export default function HomePage() {
     data: dateIdea,
     loading: dateIdeaLoading,
     error: dateIdeaError,
-  } = useFetchDateIdea(jobId, curCursor);
+  } = useFetchDateIdea(jobId, curCursor, 5);
   const description = dateIdea?.description;
   const locations = dateIdea?.dateLocations;
 
@@ -80,9 +81,12 @@ export default function HomePage() {
       <div style={HomePageStyle.inputBarWrapper}>
         <InputBar
           inputValue={inputValue}
+          locationVal={locationVal}
           handleChange={handleChange}
           handleSubmit={handleSubmit}
+          handleLocationChange={handleLocationChange}
         />
+        <>Select Locations</>
       </div>
 
       <div style={HomePageStyle.dateIdeaListWrapper}>
