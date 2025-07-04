@@ -7,7 +7,7 @@ from lib.rabbitmq import consume_queue
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
 from dotenv import load_dotenv
-from initializers.main import overpassApiClient, vectorDB, embedder
+from initializers.main import overpassApiClient, qdrantDB, embedder
 from domain.shared.place_data import VectoredPlaceData
 from utils.main import stringifyPlaceData
 
@@ -15,15 +15,18 @@ def main():
     load_dotenv()
     logger = initLogger("main")
     generatorDB.connect_db()
+
+    qdrantDB.initDB()
+    # qdrantDB.deleteAllNodes()
     # nodes = overpassApiClient.gather_data("Pasir Ris")[:20]
-    # vectored_nodes = map(lambda x: VectoredPlaceData(x.id, x.lat, x.lon, x.tags, embedder.embed(stringifyPlaceData(x))), nodes)
-    vectorDB.initDB()
-    # vectorDB.upsertNodes(vectored_nodes)
+    # vectored_nodes = list(map(lambda x: VectoredPlaceData(x.id, x.lat, x.lon, x.tags, embedder.embed(stringifyPlaceData(x))), nodes))
+
+    # qdrantDB.upsertNodes(vectored_nodes)
 
     # Internal objects
     jobRepo = JobRepoImpl() #  This is the one that interacts with `postgresJobDB`. Flexible internal impl can be modified to use other ORMS.
     resultRepo = ResultRepoImpl()
-    worker = WorkerImpl(jobRepo, resultRepo, vectorDB, embedder)
+    worker = WorkerImpl(jobRepo, resultRepo, qdrantDB, embedder)
 
     consume_queue(worker) # blocking
 

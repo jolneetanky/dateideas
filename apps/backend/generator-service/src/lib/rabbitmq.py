@@ -9,7 +9,6 @@ from lib.logger import initLogger
 # formats message into the resource we need
 def format_message(body: bytes) -> JobQueueConsumedMessage:
     data = json.loads(body)
-    print("DATAAA", data)
 
     return JobQueueConsumedMessage(
         job_id=uuid.UUID(data["job_id"]),
@@ -26,7 +25,7 @@ def consume_queue(worker: WorkerImpl):
         formatted_body = format_message(body)
         try:
             logger.info("Generating...")
-            worker.generate(formatted_body.job_id, formatted_body.prompt, formatted_body.location, formatted_body.budget)
+            worker.generate(formatted_body.job_id, formatted_body.prompt, formatted_body.location["lat"], formatted_body.location["lon"], formatted_body.location["radius_km"], formatted_body.budget)
         except Exception as e:
             logger.error(f"ERROR: {e}") 
             ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)

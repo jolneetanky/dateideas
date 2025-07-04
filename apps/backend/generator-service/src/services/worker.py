@@ -9,6 +9,10 @@ from initializers.main import overpassApiClient
 from dataclasses import dataclass
 from lib.vectordb.base import VectorDB
 from lib.embedder.base import Embedder
+from domain.resource.message import Location
+import uuid
+from lib.vectordb.qdrant import QdrantDB
+
 class Worker(ABC):
     def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo):
         pass
@@ -17,47 +21,40 @@ class Worker(ABC):
     def generate(self):
         pass
 
-# @dataclass
-# class LocationFilter(): 
-#     country: str 
-#     city?: string;
-#     region?: string;
-#     lat?: number;
-#     lon?: number;
-#     radius_km?: number;
-
-# TODO: write a vectorDB.get_top_k(k) function to return us the top k nodes in the DB that match the given prompt.
-
 class WorkerImpl(Worker):
-    def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo, vectorDB: VectorDB, embedder: Embedder):
+    MAX_RES_LEN = 100
+
+    def __init__(self, jobRepo: JobRepo, resultRepo: ResultRepo, qdrantDB: QdrantDB, embedder: Embedder):
         self.jobRepo = jobRepo
         self.resultRepo = resultRepo
-        self.vectorDB = vectorDB
+        self.qdrantDB = qdrantDB
         self.embedder = embedder
 
-    def generate(self, job_id, prompt, location, budget):
+    def generate(self, job_id: uuid.UUID, prompt: str, lat: float, lon: float, radius_km: float, budget: int):
         logger = initLogger("worker.generate")
-        logger.info(f"Generating for job_id: {job_id}, prompt: {prompt}, location: {location}, budget: {budget}")
-
-        data = overpassApiClient.gather_data("Orchard")[:1] # trim to length 20 first
-        logger.info(f"Successfully gathered data")
+        logger.info(f"Generating for job_id: {job_id}, prompt: {prompt}, lat: {lat}, lon: {lon}, radius: {radius_km}, budget: {budget}")
 
         # Generate date idea description
         desc = generator.generate(prompt)
         logger.info(f"Successfully generated date idea")
         logger.info(f"DESC: {desc}")
 
-        # Get matching nodes.
-        # node_ids = filterer.filter(desc, data, 1)
+        logger.info(f"Embedding prompt...")
         vector = self.embedder.embed(prompt)
-        nodes = self.vectorDB.getTopKNodes(vector, 10)
-        logger.info(f"FILTERED NODES: {nodes}")
 
-        node_ids = map(lambda node: node.id, nodes)
+        self.qdrantDB.testPayload()
+
+        # Get first 100 matching nodes
+        logger.info(f"Querying vectorDB...") 
+        nodes = self.qdrantDB.getTopKNodesWithLocation(vector, self.MAX_RES_LEN, lat, lon, radius_km)
+        logger.info(f"FILTERED NODES LENGTH: {len(nodes)}")
+
+        node_ids = list(map(lambda node: node.id, nodes))
 
         logger.info(f"Successfully got matching nodeIDs")
         logger.info(f"NODEIDs: {node_ids}")
 
+        # Insert results into DB
         self.resultRepo.insert_results(job_id=job_id, desc=desc, node_ids=node_ids)
 
         try:

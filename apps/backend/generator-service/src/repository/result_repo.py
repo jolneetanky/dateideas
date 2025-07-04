@@ -17,6 +17,11 @@ class ResultRepoImpl(ResultRepo):
     def insert_results(self, job_id: uuid.UUID, desc: str, node_ids: list[str]):
         logger = initLogger("ResultRepo.insert_results")
         logger.info(f"Inserting results for jobID {job_id}...")
+
+        if len(node_ids) == 0:
+            logger.error("Cannot insert results: node_ids is empty")
+            raise ValueError("Cannot insert results: node_ids is empty")
+
         results = [
             Result(job_id=job_id, description=desc, node_id=node_id)
             for node_id in node_ids

@@ -11,5 +11,13 @@ class VectorDB():
         pass
 
     @abstractmethod
-    def getTopKNodes(self, vector: list[float], k: int) -> VectoredPlaceData:
+    def getTopKNodes(self, vector: list[float], k: int) -> list[VectoredPlaceData]:
+        pass
+
+    @abstractmethod
+    def getTopKNodesWithLocation(self, vector: list[float], k: int, lat: float, lon: float, radius_km: float) -> list[VectoredPlaceData]:
+        pass
+
+    @abstractmethod
+    def getAllNodes(self):
         pass
