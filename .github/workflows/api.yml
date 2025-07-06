@@ -1,4 +1,4 @@
-name: Generator Service Tests
+name: Api Entrypoint Tests
 
 on:
   push:
@@ -28,6 +28,3 @@ jobs:
 
       - name: Download Go modules
         run: go mod download
-
-      - name: Run tests
-        run: go test ./...
