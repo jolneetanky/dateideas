@@ -14,7 +14,7 @@ export const useInputBar = () => {
 
   const [inputValue, setInputValue] = useState("");
 
-  const [locationVal, setLocationVal] = useState<string | null>("");
+  const [locationVal, setLocationVal] = useState<string | null>(null);
   const handleLocationChange = (val: string | null) => {
     console.log(`[useInputBar.handleLocatinoChange()]: VAL: ${val}`);
     setLocationVal(val);

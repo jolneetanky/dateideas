@@ -2,15 +2,43 @@ import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { JsonDateIdea, DateIdea } from "../dateidea/types";
 import axios from "axios";
 import { GenerateIdeasReq, Location } from "./types";
-import { initLogger } from "@/lib/logger";
 import {
   ApiCursorResponse,
   ApiClientCursorResponse,
   ApiResponse,
 } from "@/api/types";
-import next from "next";
 
 const API_BASE_URL = "http://localhost:8000";
+
+// HELPER FN
+const getLocation = async (
+  locationStr: string | null
+): Promise<Location | null> => {
+  console.log(`[GeneratorClient.location()] converting string to location...`);
+
+  if (locationStr == "" || locationStr == null) {
+    return null;
+  }
+
+  console.log(
+    `[GeneratorClient.getLocation()] Converting locationStr to lat and lon...`
+  );
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${locationStr}`
+  );
+
+  const data = await res.json();
+  const lat = parseFloat(data[0].lat);
+  const lon = parseFloat(data[0].lon);
+
+  const location: Location = {
+    lat: lat,
+    lon: lon,
+    radius_km: 50,
+  };
+
+  return location;
+};
 class GeneratorClient extends ApiClient<DateIdea> {
   // This function sends the prompt to BE,
   // and does long polling either it receives a BE response, or times out.
@@ -25,27 +53,11 @@ class GeneratorClient extends ApiClient<DateIdea> {
       `[GeneratorClient.generate()] Formatting location. Prompt: ${prompt}, LocationStr: ${locationStr}`
     );
 
-    // Convert string location to lat and lon
-    console.log(
-      `[GeneratorClient.generate()] converting location to lat and lon...`
-    );
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${locationStr}`
-    );
-    const data = await res.json();
-    const lat = parseFloat(data[0].lat);
-    const lon = parseFloat(data[0].lon);
-
-    // TODO: build "location "
-    const location: Location = {
-      lat: lat,
-      lon: lon,
-      radius_km: 50,
-    };
+    const location = await getLocation(locationStr);
 
     const body: GenerateIdeasReq = {
       prompt: prompt,
-      ...(locationStr !== null && { location }),
+      ...(location !== null && { location }),
       ...(budget !== undefined && { budget }),
     };
 
@@ -99,8 +111,6 @@ class GeneratorClient extends ApiClient<DateIdea> {
         error: err?.response?.data?.error || "Unknown error",
       };
     }
-
-    // TODO: incorporate polling logic.
   }
 
   async getResult(
@@ -141,7 +151,7 @@ class GeneratorClient extends ApiClient<DateIdea> {
       };
     } catch (err: any) {
       console.log(
-        "[generator.apiClient.getDateIdea] Failed to fetch date iidea",
+        "[generator.apiClient.getDateIdea] Failed to fetch date idea",
         err
       );
       return {

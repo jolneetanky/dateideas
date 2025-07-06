@@ -11,6 +11,13 @@ const InputBarStyle = {
   container: {
     display: "flex",
     gap: 10,
+    marginBottom: "0.75rem",
+    // },
+    // inputWrapper: {
+    //   display: "flex",
+    //   gap: 10,
+    //   marginBottom: "0.75rem",
+    // },
   },
 };
 
@@ -28,15 +35,17 @@ export const InputBar = ({
   handleLocationChange: (val: string | null) => void;
 }) => {
   return (
-    <form style={InputBarStyle.container} onSubmit={handleSubmit}>
-      <TextInput
-        placeholder="Enter a prompt"
-        value={inputValue}
-        onChange={handleChange}
-      />
-      <Button variant="filled" type="submit">
-        Generate
-      </Button>
+    <form onSubmit={handleSubmit}>
+      <div style={InputBarStyle.container}>
+        <TextInput
+          placeholder="Enter a prompt"
+          value={inputValue}
+          onChange={handleChange}
+        />
+        <Button variant="filled" type="submit">
+          Generate
+        </Button>
+      </div>
 
       <Select
         placeholder="Select location"

@@ -1,5 +1,8 @@
 "use client";
-import { DateLocationList } from "@/features/dateidea/components";
+import {
+  DateDescription,
+  DateLocationList,
+} from "@/features/dateidea/components";
 import { InputBar } from "@/features/generator/components";
 import {
   useFetchDateIdea,
@@ -24,6 +27,7 @@ const HomePageStyle = {
     display: "flex",
     height: "100vh",
     width: "100%",
+    padding: "1rem",
   },
   dateIdeaListWrapper: {
     height: "65%",
@@ -71,7 +75,6 @@ export default function HomePage() {
   const dispatch = useAppDispatch();
   const handleLoadMore = () => {
     console.log("LOAD MORE");
-    // dispatch(nextCursorChanged(cursor));
     console.log("HELLO", nextCursor);
     dispatch(curCursorChanged(nextCursor));
   };
@@ -86,21 +89,14 @@ export default function HomePage() {
           handleSubmit={handleSubmit}
           handleLocationChange={handleLocationChange}
         />
-        <>Select Locations</>
       </div>
 
       <div style={HomePageStyle.dateIdeaListWrapper}>
         {(generationLoading || dateIdeaLoading) && <>Generating...</>}
 
-        {!generationLoading &&
-          !dateIdeaLoading &&
-          generationError == "" &&
-          dateIdeaError == "" && (
-            <>
-              {description}
-              <DateLocationList locations={locations ?? []} />
-            </>
-          )}
+        {description && <DateDescription description={description} />}
+
+        <DateLocationList locations={locations ?? []} />
 
         {generationError != "" && <>{generationError}</>}
 
