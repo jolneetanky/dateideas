@@ -13,7 +13,7 @@ import (
 
 // Define interface
 type GeneratorService interface {
-	Generate(prompt string, location string, budget int) (string, error)
+	Generate(prompt string, location resource.Location, budget int) (string, error)
 }
 
 // Define implementation struct
@@ -27,16 +27,7 @@ func InitGeneratorServiceImpl(jobRepo repositories.JobRepositoryImpl) GeneratorS
 }
 
 // Implement methods
-func (gs GeneratorServiceImpl) Generate(prompt string, location string, budget int) (string, error) {
-	// what if we talk to jobDB to give us a new jobID of this guy
-	// at the same time, store column `prompt_hash_` in the row. this will help us later when we impl caching.
-
-	// time = O(logn) with indexing
-	// purge old jobs? Implies we should use a cache or something
-	// then enqueue the prompt and jobID which helps us generate results + mark as done in jobDB
-	// we should hash the prompt
-
-	// in our DB, hash the prompt and use that as primary key? (ok maybe later on)
+func (gs GeneratorServiceImpl) Generate(prompt string, location resource.Location, budget int) (string, error) {
 
 	jobId := utils.GenerateJobId()
 

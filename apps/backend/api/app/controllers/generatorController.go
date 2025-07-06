@@ -31,7 +31,7 @@ func (gc GeneratorControllerImpl) Generate(c *gin.Context) {
 	// start with default "nil" value for the request
 	generateIdeasRequest := resource.GenerateIdeasRequest{
 		Prompt:   "",
-		Location: "",
+		Location: resource.Location{Lat: 1.3773129, Lon: 103.9284515, RadiusKm: 5.0},
 		Budget:   -1,
 	}
 

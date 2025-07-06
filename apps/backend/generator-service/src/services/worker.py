@@ -30,12 +30,12 @@ class WorkerImpl(Worker):
         self.qdrantDB = qdrantDB
         self.embedder = embedder
 
-    def generate(self, job_id: uuid.UUID, prompt: str, lat: float, lon: float, radius_km: float, budget: int):
-        logger = initLogger("worker.generate")
-        logger.info(f"Generating for job_id: {job_id}, prompt: {prompt}, lat: {lat}, lon: {lon}, radius: {radius_km}, budget: {budget}")
+    def generate(self, job_id: uuid.UUID, prompt: str, loc_str: str, lat: float, lon: float, radius_km: float, budget: int) -> Status:
+        logger = initLogger("worker.generate()")
+        logger.info(f"Generating for job_id: {job_id}, prompt: {prompt}, loc_str: {loc_str} , lat: {lat}, lon: {lon}, radius: {radius_km}, budget: {budget}")
 
         # Generate date idea description
-        desc = generator.generate(prompt)
+        desc = generator.generate(prompt, loc_str)
         logger.info(f"Successfully generated date idea")
         logger.info(f"DESC: {desc}")
 
@@ -57,9 +57,4 @@ class WorkerImpl(Worker):
         # Insert results into DB
         self.resultRepo.insert_results(job_id=job_id, desc=desc, node_ids=node_ids)
 
-        try:
-            self.jobRepo.update_job(job_id, Status.SUCCESS)
-            logger.info(f"Successfully updated job id {job_id}")
-        except Exception as e:
-            logger.error(f"Error updating job id as success: {e}")
-            raise # rethrow exception after logging 
+        return Status.SUCCESS

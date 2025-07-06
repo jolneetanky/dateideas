@@ -7,6 +7,7 @@ class Location:
     lat: float
     lon: float
     radius_km: float
+    location_str: str
 @dataclass
 class JobQueueConsumedMessage:
     job_id: uuid.UUID
