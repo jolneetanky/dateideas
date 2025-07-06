@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/entity"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/domain/resource"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/overpassclient"
@@ -69,19 +70,26 @@ func (rs ResultServiceImpl) GetResultsByJobIdPrev(jobId uuid.UUID, page int, lim
 }
 
 // WITH BATCHING
-func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID, after uint, limit int) (result resource.DateIdea, nextCursor uint, err error) {
-	logger.Info(fmt.Sprintf("Getting results for job ID: %s", jobId))
+func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID, cursor uint, limit int, direction string) (result resource.DateIdea, prevCursor uint, nextCursor uint, err error) {
+	logger.Info(fmt.Sprintf("Getting results for job ID: %s. CURSOR = %d, LIMIT = %d, DIRECTION = %s", jobId, cursor, limit, direction))
 
 	// replace with mock repo if for some reason workers are not working properly
 	// mockRepo := repositories.InitMockResultRepoImpl()
 	// results, err := mockRepo.GetResultsByJobId(jobId, page, limit)
 
 	// Get results from repo
-	results, err := rs.resultRepo.GetResultsByJobId(jobId, after, limit)
+	var results []entity.Result
+
+	switch direction {
+	case "next":
+		results, err = rs.resultRepo.GetResultsMoreThan(jobId, cursor, limit)
+	case "prev":
+		results, err = rs.resultRepo.GetResultsLessThan(jobId, cursor, limit)
+	}
 
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error getting results for job ID %s: %s", jobId, err.Error()))
-		return resource.DateIdea{}, 0, err
+		return resource.DateIdea{}, 0, 0, err
 	}
 
 	// Extract nodeIDs
@@ -97,7 +105,7 @@ func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID, after uint, limit
 	nodes, err := overpassClient.GetNodesByIds(nodeIds)
 
 	if err != nil {
-		return resource.DateIdea{}, 0, err
+		return resource.DateIdea{}, 0, 0, err
 	}
 
 	// format nodes
@@ -114,10 +122,11 @@ func (rs ResultServiceImpl) GetResultsByJobId(jobId uuid.UUID, after uint, limit
 
 	if len(dateLocations) > 0 {
 		nextCursor = results[len(results)-1].ID
+		prevCursor = results[0].ID
 	}
 
 	logger.Info("Done fetching and formatting Overpass nodes")
 
-	return result, nextCursor, nil
+	return result, prevCursor, nextCursor, nil
 
 }

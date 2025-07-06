@@ -18,11 +18,8 @@ class DateIdeaGenerator(Generator):
         BASE_GENERATION_PROMPT = """
 You're a creative date planner. Given a user’s prompt, suggest a fun and unique date idea. 
 Make it short, warm, and specific to the mood and location. Avoid generic tips.
-As for the given location, suggest date ideas specific to the CITY of the location, your suggestions are not so limiting.
 
 User prompt: "{user_prompt}"
-
-Date idea:
 """
         logger = initLogger("DateIdeaGenerator.generate")
         full_prompt = BASE_GENERATION_PROMPT.format(user_prompt=prompt, loc_str=loc_str)

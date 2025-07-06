@@ -27,34 +27,20 @@ func InitResultControllerImpl(service services.ResultServiceImpl) ResultControll
 // implement methods
 func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	jobId := c.Param("jobId")
-	// Parse query params with default values
-	// pageStr := c.DefaultQuery("page", "1")
 	limitStr := c.DefaultQuery("limit", "10")
-	afterStr := c.DefaultQuery("after", "0")
+	cursorStr := c.DefaultQuery("cursor", "0")
+	direction := c.DefaultQuery("direction", "next")
 
-	logger.Info(fmt.Sprintf("[GET /api/generator/results/:jobId] Fetching results for jobID %s. AFTER: %s, LIMIT: %s", jobId, afterStr, limitStr))
+	logger.Info(fmt.Sprintf("[GET /api/generator/results/:jobId] Fetching results for jobID %s. AFTER: %s, LIMIT: %s, DIRECTION: %s", jobId, cursorStr, limitStr, direction))
 
-	// page, err := strconv.Atoi(pageStr)
+	cursorUint64, err := strconv.ParseUint(cursorStr, 10, 64)
+	cursor := uint(cursorUint64)
 
-	// if err != nil || page < 1 {
-	// 	logger.Info(fmt.Sprintf("Invalid page: %s", err.Error()))
-	// 	c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
-	// 		Status:  resource.Error,
-	// 		Message: fmt.Sprintf("Invalid page number: %s", pageStr),
-	// 		Error:   err.Error(),
-	// 		Data:    nil,
-	// 	})
-	// 	return
-	// }
-
-	afterUint64, err := strconv.ParseUint(afterStr, 10, 64)
-	after := uint(afterUint64)
-
-	if err != nil || after < 0 {
+	if err != nil {
 		logger.Info(fmt.Sprintf("Invalid page: %s", err.Error()))
 		c.JSON(http.StatusBadRequest, resource.ApiResponse[error]{
 			Status:  resource.Error,
-			Message: fmt.Sprintf("Invalid page number: %s", afterStr),
+			Message: fmt.Sprintf("Invalid cursor: %s", cursor),
 			Error:   err.Error(),
 			Data:    nil,
 		})
@@ -93,10 +79,12 @@ func (rc ResultControllerImpl) GetResultsByJobId(c *gin.Context) {
 	// dateIdea, serviceErr := rc.service.GetResultsByJobIdPrev(formattedJobId)
 
 	// VERSION #2: Uncomment to see performance with batching requests
-	dateIdea, nextCursor, serviceErr := rc.service.GetResultsByJobId(formattedJobId, after, limit)
+	dateIdea, prevCursor, nextCursor, serviceErr := rc.service.GetResultsByJobId(formattedJobId, cursor, limit, direction)
+	logger.Info(fmt.Sprintf("Successfully fetched results. PREV_CURSOR: %d, NEXT_CURSOR: %d", prevCursor, nextCursor))
 
 	data := resource.CursorResponse[resource.DateIdea]{
 		Data:       dateIdea,
+		PrevCursor: fmt.Sprintf("%d", prevCursor),
 		NextCursor: fmt.Sprintf("%d", nextCursor),
 	}
 
