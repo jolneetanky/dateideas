@@ -9,10 +9,7 @@ import {
   // useFetchGeneratedIdeasPage,
   useInputBar,
 } from "@/features/generator/hooks";
-import {
-  selectGeneratedIdeasStatus,
-  selectJobId,
-} from "@/features/generator/slice";
+import { selectJobId } from "@/features/generator/slice";
 import { LoadMore, LoadPrev } from "@/features/pagination/components";
 import {
   curCursorChanged,
@@ -53,7 +50,6 @@ const HomePageStyle = {
 
 export default function HomePage() {
   const jobId = useAppSelector(selectJobId);
-  const status = useAppSelector(selectGeneratedIdeasStatus);
   const nextCursor = useAppSelector(selectNextCursor);
   const curCursor = useAppSelector(selectCurCursor);
   const prevCursor = useAppSelector(selectPrevCursor);

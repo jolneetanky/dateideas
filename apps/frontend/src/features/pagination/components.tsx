@@ -1,15 +1,5 @@
 import { Button } from "@mantine/core";
-
-const Style = {
-  wrapper: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: "1rem",
-  },
-  button: {
-    padding: "0.5rem 1rem",
-  },
-};
+import styles from "./styles.module.css";
 
 type LoadMoreProps = {
   onClick: () => void;
@@ -29,13 +19,13 @@ export const LoadMore = ({
   loading = false,
 }: LoadMoreProps) => {
   return (
-    <div className={Style.wrapper}>
+    <div className={styles.wrapper}>
       <Button
         onClick={onClick}
         disabled={disabled}
         loading={loading}
         variant="light"
-        className={Style.button}
+        className={styles.button}
       >
         Load More
       </Button>
@@ -49,13 +39,13 @@ export const LoadPrev = ({
   loading = false,
 }: LoadPrevProps) => {
   return (
-    <div className={Style.wrapper}>
+    <div className={styles.wrapper}>
       <Button
         onClick={onClick}
         disabled={disabled}
         loading={loading}
         variant="light"
-        className={Style.button}
+        className={styles.button}
       >
         Load Previous
       </Button>

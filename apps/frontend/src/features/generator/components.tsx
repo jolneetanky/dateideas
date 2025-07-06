@@ -1,9 +1,4 @@
 "use client";
-// I'll just put this inside this folder first.
-// Refactor if needed tmr.
-// FOR NOW, I WANT IT SUCH THAT
-// 1) when usser fills up input bar, the state is logged
-// 2) when user clicks "generate", we send all that into to some mock API.
 
 import { Button, Select, TextInput } from "@mantine/core";
 
@@ -12,12 +7,6 @@ const InputBarStyle = {
     display: "flex",
     gap: 10,
     marginBottom: "0.75rem",
-    // },
-    // inputWrapper: {
-    //   display: "flex",
-    //   gap: 10,
-    //   marginBottom: "0.75rem",
-    // },
   },
 };
 

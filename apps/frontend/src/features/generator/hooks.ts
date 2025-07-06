@@ -115,7 +115,7 @@ export const useFetchDateIdea = (
     if (prevCursor != undefined) {
       dispatch(prevCursorChanged(prevCursor));
     }
-  }, [generatorClientResponse, dispatch, nextCursor]);
+  }, [generatorClientResponse, dispatch, nextCursor, prevCursor]);
 
   return {
     data: dateidea ?? null,
