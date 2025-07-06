@@ -51,7 +51,7 @@ func InitLogger() {
 	formatter := &logrus.TextFormatter{
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
 			filename := path.Base(f.File)
-			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf("%s:%d", filename, f.Line)
+			return "LOGGER:", fmt.Sprintf("%s:%d", filename, f.Line)
 		},
 	}
 	logger.SetFormatter(formatter)

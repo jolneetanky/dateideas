@@ -1,25 +1,54 @@
-import { Pagination } from "@mantine/core";
+import { Button } from "@mantine/core";
+import styles from "./styles.module.css";
 
-export const PageNav = ({
-  totalPages,
-  curPage,
-  handlePageChange,
-}: {
-  totalPages: number;
-  curPage: number;
-  handlePageChange: (page: number) => void;
-  // pagination: UsePaginationReturn;
-}) => {
+type LoadMoreProps = {
+  onClick: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+};
+
+type LoadPrevProps = {
+  onClick: () => void;
+  disabled?: boolean;
+  loading?: boolean;
+};
+
+export const LoadMore = ({
+  onClick,
+  disabled = false,
+  loading = false,
+}: LoadMoreProps) => {
   return (
-    <>
-      <Pagination
-        // onChange={pagination.setPage}
-        value={curPage}
-        onChange={handlePageChange}
-        total={totalPages}
-        autoContrast
-        color="lime.4"
-      />
-    </>
+    <div className={styles.wrapper}>
+      <Button
+        onClick={onClick}
+        disabled={disabled}
+        loading={loading}
+        variant="light"
+        className={styles.button}
+      >
+        Load More
+      </Button>
+    </div>
+  );
+};
+
+export const LoadPrev = ({
+  onClick,
+  disabled = false,
+  loading = false,
+}: LoadPrevProps) => {
+  return (
+    <div className={styles.wrapper}>
+      <Button
+        onClick={onClick}
+        disabled={disabled}
+        loading={loading}
+        variant="light"
+        className={styles.button}
+      >
+        Load Previous
+      </Button>
+    </div>
   );
 };

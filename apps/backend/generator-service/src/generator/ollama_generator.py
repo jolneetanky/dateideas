@@ -5,6 +5,9 @@ import numpy as np
 import requests
 from dataclasses import fields
 from domain.resource.generated_data import GeneratedData
+from lib.logger import initLogger
+import os
+from huggingface_hub import InferenceClient
 
 def combine_features(row):
     '''
@@ -15,21 +18,48 @@ def combine_features(row):
     Returns:
     str: A combined string of key location features. These are the main features we care about.
     '''
+    # return f"""
+    # latitude: {row.get("lat", 0.0)},
+    # longitude: {row.get("lon", 0.0)},
+    # amenity: {row.get("amenity", "")},
+    # name: {row.get("name", "")},
+    # street: {row.get("street", "")},
+    # city: {row.get("city", "")},
+    # """
+
     return f"""
-    Latitude: {row['lat']},
-    Longitude: {row['lon']},
-    Amenity: {row['amenity']},
-    Name: {row['name']},
-    Street: {row['street']},
-    City: {row['city']},
+    latitude: {row.get("lat", 0.0)},
+    longitude: {row.get("lon", 0.0)},
+    tags: {row.get("tags", {})}
     """
 
-class OllamaGenerator(Generator):
+def embed(input: str) -> dict:
+    logger = initLogger("generator.ollama_generator.embed()")
+    logger.info("EMBEDDING...")
+    HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+    PROVIDER = "hf-inference"
+    MODEL = "intfloat/multilingual-e5-large-instruct"
+    # logger.info("Embedding...")
+
+    client = InferenceClient(
+        provider=PROVIDER,
+        api_key=HF_TOKEN,
+    )
+
+    result = client.feature_extraction(
+        input,
+        model=MODEL,
+    )
+    return result
+class GeneratorImpl(Generator):
     def __init__(self):
         pass
-
-    def generate(self, prompt, data) -> list[GeneratedData]:
+    
+    # returns a list of nodeIDs
+    def generate(self, prompt, data) -> list[str]:
+        logger = initLogger("generator.ollama_generator.generate()")
         # Generate and display recommendations
+        logger.info(f"PROMPT: {prompt}")
 
         df = pd.DataFrame(data)
 
@@ -37,7 +67,7 @@ class OllamaGenerator(Generator):
         df['combined_features'] = df.apply(combine_features, axis=1) 
 
         # Define vector dimensionality (3072 dimentions)
-        dim = 3072
+        dim = 1024
 
         # Create a FAISS index for L2 distance searching
         index = faiss.IndexFlatL2(dim)
@@ -49,21 +79,16 @@ class OllamaGenerator(Generator):
 
         # Iterate through each combined feature representation in the DataFrame
         # NOTE: `_repr` is Python's conventional way of saying "string representation".
+        # embed just the fields we are interested in
         for i, _repr in enumerate(df['combined_features']):
             # Print progress every 10 locations processed
             if i % 10 == 0:
                 print("Processed {}/{}".format(i, len(df['combined_features']))) 
-            
-            # Send a POST req to the local Llama model API to generate embeddings
-            res = requests.post("http://localhost:11434/api/embeddings",
-                                json={"model": "llama3.2", # Specify the model to use
-                                    "prompt": _repr}) # Provide the combined features as the prompt
 
-            # Extract embedding from API response
-            embedding = res.json()['embedding']
+            embedding_list = embed(_repr)
 
             # Store generated embedding in numpy array `X`
-            X[i] = np.array(embedding)
+            X[i] = np.array(embedding_list)
 
         # Add embeddings to the FAISS Index
         index.add(X)
@@ -74,11 +99,8 @@ class OllamaGenerator(Generator):
         # Optionally, you can load the index from the file in subsequent runs
         # index = faiss.read_index("index")
         
-        # Generate embedding for the input description
-        res = requests.post("http://localhost:11434/api/embeddings",
-                        json={"model": "llama3.2", "prompt": prompt})
-        print(res.json())
-        embedding = np.array(res.json()['embedding']).reshape(1, -1)
+        embedding_list = embed(prompt)
+        embedding = np.array(embedding_list).reshape(1, -1)
 
         # Perform a search in the FAISS index for the top 5 similar locations
         # ie. those in the index that match our input embedding the most
@@ -92,18 +114,24 @@ class OllamaGenerator(Generator):
             idx = indices[0][i]
             row = df.iloc[idx]
 
-            # convert to DateIdea dataclass
+            # # convert to DateIdea dataclass
             row_dict = row.to_dict()
-            field_names = [f.name for f in fields(GeneratedData)]
-            mapped_data = {}
-            for key in field_names:
-                if key in row_dict:
-                    mapped_data[key] = row_dict[key]
-            # NOTE: it's okay if `mapped_data` has some missing fields, 
-            # because our DateIdea dataclass alr has default values defined
-            # Create a DateIdea instance using unpacking
-            dateidea = GeneratedData(**mapped_data)
+            # field_names = [f.name for f in fields(GeneratedData)]
+            # mapped_data = {}
+            # for key in field_names:
+            #     if key in row_dict:
+            #         mapped_data[key] = row_dict[key]
+            # # NOTE: it's okay if `mapped_data` has some missing fields, 
+            # # because our DateIdea dataclass alr has default values defined
+            # # Create a DateIdea instance using unpacking
+            # dateidea = GeneratedData(**mapped_data)
 
-            dateideas.append(dateidea)
+            # dateideas.append(dateidea)
+            # dateideas.append(row_dict["tags"].get("name", ""))
+            # nodeid
+
+            # NEED: node_id
+            node_id = row_dict["node_id"]
+            dateideas.append(node_id)
         
         return dateideas

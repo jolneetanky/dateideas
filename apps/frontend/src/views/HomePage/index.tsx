@@ -1,19 +1,25 @@
 "use client";
-import { DateIdeaList } from "@/features/dateidea/components";
 import {
-  GeneratedIdeasPageNav,
-  InputBar,
-} from "@/features/generator/components";
+  DateDescription,
+  DateLocationList,
+} from "@/features/dateidea/components";
+import { InputBar } from "@/features/generator/components";
 import {
-  useFetchGeneratedIdeasPage,
+  useFetchDateIdea,
+  // useFetchGeneratedIdeasPage,
   useInputBar,
 } from "@/features/generator/hooks";
+import { selectJobId } from "@/features/generator/slice";
+import { LoadMore, LoadPrev } from "@/features/pagination/components";
 import {
-  selectGeneratedIdeasPageNumber,
-  selectGeneratedIdeasStatus,
-  selectJobId,
-} from "@/features/generator/slice";
-import { useAppSelector } from "@/lib/redux/hooks";
+  curCursorChanged,
+  directionChanged,
+  selectCurCursor,
+  selectDirection,
+  selectNextCursor,
+  selectPrevCursor,
+} from "@/features/pagination/slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
 // TODO: convert to CSS module
 const HomePageStyle = {
@@ -21,6 +27,7 @@ const HomePageStyle = {
     display: "flex",
     height: "100vh",
     width: "100%",
+    padding: "1rem",
   },
   dateIdeaListWrapper: {
     height: "65%",
@@ -32,62 +39,94 @@ const HomePageStyle = {
     justifyContent: "center",
   },
   pageNavWrapper: {
-    bottom: "1rem",
-    width: "100%",
+    marginTop: "auto",
+    paddingTop: "1rem",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
+    alignItems: "center",
+    gap: "1rem",
   },
 };
 
 export default function HomePage() {
-  // const { page } = useGeneratedIdeasPageCtx();
   const jobId = useAppSelector(selectJobId);
-  const page = useAppSelector(selectGeneratedIdeasPageNumber);
-  const status = useAppSelector(selectGeneratedIdeasStatus);
-  // const generatedIdeasPage = useAppSelector(selectGeneratedIdeasPage);
-  // Within the `useFetchGeneratedIdeasPage` hook, there's a `useEffect` that will run when `page` changes
-  // ensuring that `data`, `loading`, `error` changes when `page` changes.
+  const nextCursor = useAppSelector(selectNextCursor);
+  const curCursor = useAppSelector(selectCurCursor);
+  const prevCursor = useAppSelector(selectPrevCursor);
+  const direction = useAppSelector(selectDirection);
+  const LIMIT = 5;
+
   const {
     inputValue,
+    locationVal,
     handleChange,
     handleSubmit,
+    handleLocationChange,
     isPending: generationLoading,
-    error: _generationError,
+    error: generationError,
   } = useInputBar();
 
   const {
-    data: generatedIdeasPage,
-    loading: _loading,
-    error: _error,
-  } = useFetchGeneratedIdeasPage(page, jobId);
-  const dateideas = generatedIdeasPage?.data;
+    data: dateIdea,
+    loading: dateIdeaLoading,
+    error: dateIdeaError,
+  } = useFetchDateIdea(jobId, curCursor, LIMIT, direction);
+  const description = dateIdea?.description;
+  const locations = dateIdea?.dateLocations;
+
+  const dispatch = useAppDispatch();
+
+  const handleLoadMore = () => {
+    console.log("LOAD MORE");
+    if (nextCursor != null) {
+      dispatch(curCursorChanged(nextCursor));
+      dispatch(directionChanged("next"));
+    }
+  };
+
+  const handleLoadPrev = () => {
+    console.log("LOAD PREV");
+    if (prevCursor != null) {
+      dispatch(curCursorChanged(prevCursor));
+      dispatch(directionChanged("prev"));
+    }
+  };
+
+  const hasNext = () => {
+    return locations != undefined && locations.length == LIMIT;
+  };
+
+  const hasPrev = () => {
+    return prevCursor != undefined && prevCursor != null;
+  };
 
   return (
     <div style={HomePageStyle.container} className="flex-col">
       <div style={HomePageStyle.inputBarWrapper}>
         <InputBar
           inputValue={inputValue}
+          locationVal={locationVal}
           handleChange={handleChange}
           handleSubmit={handleSubmit}
+          handleLocationChange={handleLocationChange}
         />
       </div>
 
       <div style={HomePageStyle.dateIdeaListWrapper}>
-        {generationLoading ? (
-          <>Generating...</>
-        ) : (
-          <DateIdeaList dateideas={dateideas ?? []} />
-        )}
+        {(generationLoading || dateIdeaLoading) && <>Generating...</>}
+
+        {description && <DateDescription description={description} />}
+
+        <DateLocationList locations={locations ?? []} />
+
+        {generationError != "" && <>{generationError}</>}
+
+        {dateIdeaError != "" && <>{dateIdeaError}</>}
       </div>
 
-      <div style={HomePageStyle.pageNavWrapper} className="fixed">
-        {dateideas?.length == 0 || status == "idle" ? (
-          <></>
-        ) : (
-          <GeneratedIdeasPageNav />
-        )}
+      <div style={HomePageStyle.pageNavWrapper}>
+        {hasPrev() && <LoadPrev onClick={handleLoadPrev} />}
+        {hasNext() && <LoadMore onClick={handleLoadMore} />}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { generatorReducer } from "@/features/generator/slice";
+import { paginationReducer } from "@/features/pagination/slice";
 import { configureStore } from "@reduxjs/toolkit";
 
 // reducers
@@ -7,6 +8,7 @@ export const makeStore = () => {
   return configureStore({
     reducer: {
       generator: generatorReducer,
+      pagination: paginationReducer,
     },
   });
 };

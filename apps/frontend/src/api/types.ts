@@ -6,8 +6,20 @@
  * @property {string} error - The error message, if any. * @property {
  */
 export type ApiResponse<T> = {
-    status: "success" | "error",
-    message: string,
-    data: T | null,
-    error: string,
-}
+  status: "success" | "error";
+  message: string;
+  data: T | null;
+  error: string;
+};
+
+export type ApiCursorResponse<T> = {
+  data: T;
+  next_cursor: string;
+  prev_cursor: string;
+};
+
+export type ApiClientCursorResponse<T> = {
+  data: T;
+  nextCursor: string;
+  prevCursor: string;
+};

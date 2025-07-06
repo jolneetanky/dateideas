@@ -1,5 +1,3 @@
-import { Sidebar } from "@/layouts/main-layout/Sidebar";
-import { IsSidebarOpenProvider } from "./contexts/IsSidebarOpenContext";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 
 const MainLayoutStyle = {
@@ -12,9 +10,9 @@ const MainLayoutStyle = {
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div style={MainLayoutStyle.container}>
-      <IsSidebarOpenProvider>
+      {/* <IsSidebarOpenProvider>
         <Sidebar />
-      </IsSidebarOpenProvider>
+      </IsSidebarOpenProvider> */}
 
       <ThemeToggle />
       {children}
