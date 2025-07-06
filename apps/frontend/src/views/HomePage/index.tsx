@@ -13,11 +13,14 @@ import {
   selectGeneratedIdeasStatus,
   selectJobId,
 } from "@/features/generator/slice";
-import { LoadMore } from "@/features/pagination/components";
+import { LoadMore, LoadPrev } from "@/features/pagination/components";
 import {
   curCursorChanged,
+  directionChanged,
   selectCurCursor,
+  selectDirection,
   selectNextCursor,
+  selectPrevCursor,
 } from "@/features/pagination/slice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 
@@ -39,12 +42,12 @@ const HomePageStyle = {
     justifyContent: "center",
   },
   pageNavWrapper: {
-    bottom: "1rem",
-    width: "100%",
+    marginTop: "auto",
+    paddingTop: "1rem",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
+    alignItems: "center",
+    gap: "1rem",
   },
 };
 
@@ -53,6 +56,9 @@ export default function HomePage() {
   const status = useAppSelector(selectGeneratedIdeasStatus);
   const nextCursor = useAppSelector(selectNextCursor);
   const curCursor = useAppSelector(selectCurCursor);
+  const prevCursor = useAppSelector(selectPrevCursor);
+  const direction = useAppSelector(selectDirection);
+  const LIMIT = 5;
 
   const {
     inputValue,
@@ -68,15 +74,34 @@ export default function HomePage() {
     data: dateIdea,
     loading: dateIdeaLoading,
     error: dateIdeaError,
-  } = useFetchDateIdea(jobId, curCursor, 5);
+  } = useFetchDateIdea(jobId, curCursor, LIMIT, direction);
   const description = dateIdea?.description;
   const locations = dateIdea?.dateLocations;
 
   const dispatch = useAppDispatch();
+
   const handleLoadMore = () => {
     console.log("LOAD MORE");
-    console.log("HELLO", nextCursor);
-    dispatch(curCursorChanged(nextCursor));
+    if (nextCursor != null) {
+      dispatch(curCursorChanged(nextCursor));
+      dispatch(directionChanged("next"));
+    }
+  };
+
+  const handleLoadPrev = () => {
+    console.log("LOAD PREV");
+    if (prevCursor != null) {
+      dispatch(curCursorChanged(prevCursor));
+      dispatch(directionChanged("prev"));
+    }
+  };
+
+  const hasNext = () => {
+    return locations != undefined && locations.length == LIMIT;
+  };
+
+  const hasPrev = () => {
+    return prevCursor != undefined && prevCursor != null;
   };
 
   return (
@@ -103,7 +128,10 @@ export default function HomePage() {
         {dateIdeaError != "" && <>{dateIdeaError}</>}
       </div>
 
-      {status == "success" && <LoadMore onClick={handleLoadMore} />}
+      <div style={HomePageStyle.pageNavWrapper}>
+        {hasPrev() && <LoadPrev onClick={handleLoadPrev} />}
+        {hasNext() && <LoadMore onClick={handleLoadMore} />}
+      </div>
     </div>
   );
 }

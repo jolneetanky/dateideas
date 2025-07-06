@@ -1,6 +1,6 @@
 import ApiClient, { ApiClientResponse } from "@/api/ApiClient";
 import { JsonDateIdea, DateIdea } from "../dateidea/types";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { GenerateIdeasReq, Location } from "./types";
 import {
   ApiCursorResponse,
@@ -103,33 +103,40 @@ class GeneratorClient extends ApiClient<DateIdea> {
         data: null,
         error: "Timed out while waiting for generation to complete.",
       };
-    } catch (err: any) {
+    } catch (err) {
+      let errMessage = "Unknown error";
       console.log("FAILED TO GENERATE DATE IDEAS", err);
+
+      if (axios.isAxiosError(err)) {
+        errMessage = err.response?.data.error;
+      }
+
       return {
         status: "error",
         data: null,
-        error: err?.response?.data?.error || "Unknown error",
+        error: errMessage,
       };
     }
   }
 
   async getResult(
     jobId: string,
-    after: string = "0",
-    limit: number = 5
+    cursor: string = "0",
+    limit: number = 5,
+    direction: "next" | "prev" = "next"
   ): Promise<ApiClientResponse<ApiClientCursorResponse<DateIdea>>> {
     console.log("[generator.apiClient.getDateIdea]");
 
     try {
-      const url = `${API_BASE_URL}/generator/results/${jobId}?after=${after}&limit=${limit}`;
+      const url = `${API_BASE_URL}/generator/results/${jobId}?cursor=${cursor}&limit=${limit}&direction=${direction}`;
+      console.log(
+        `[generator.apiClient.getDateIdea] GET ${API_BASE_URL}/generator/results/${jobId}?after=${cursor}&limit=${limit}&direction=${direction}`
+      );
+
       const response = await axios.get<
         ApiResponse<ApiCursorResponse<JsonDateIdea>>
       >(url);
-      const { data, message, status, error } = response.data;
-      console.log(
-        `[generator.apiClient.getDateIdea] Successfully fetched date idea for jobID ${jobId}`
-      );
-      console.log("DATA:", data);
+      const { data, message: _message, status, error } = response.data;
 
       // format data
       const dateidea: DateIdea = {
@@ -138,10 +145,17 @@ class GeneratorClient extends ApiClient<DateIdea> {
       };
 
       const nextCursor = data?.next_cursor;
+      // const curCursor = data?.cur_cursor;
+      const prevCursor = data?.prev_cursor;
+
+      console.log(
+        `[generator.apiClient.getDateIdea] Successfully fetched date idea for jobID ${jobId}. DATA: ${data}. NEXT_CURSOR: ${nextCursor}, PREV_CURSOR: ${prevCursor}`
+      );
 
       const res: ApiClientCursorResponse<DateIdea> = {
         data: dateidea,
         nextCursor: nextCursor ?? "",
+        prevCursor: prevCursor ?? "",
       };
 
       return {
@@ -149,15 +163,22 @@ class GeneratorClient extends ApiClient<DateIdea> {
         data: res,
         error: error,
       };
-    } catch (err: any) {
+    } catch (err) {
+      let errMessage = "Unknown error";
+
       console.log(
         "[generator.apiClient.getDateIdea] Failed to fetch date idea",
         err
       );
+
+      if (isAxiosError(err)) {
+        errMessage = err.response?.data.error;
+      }
+
       return {
         status: "error",
         data: null,
-        error: err?.response?.data?.error || "Unknown error",
+        error: errMessage,
       };
     }
   }

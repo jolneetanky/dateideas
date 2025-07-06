@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux/store";
-import { DateIdea } from "../dateidea/types";
 
 // STATE INTERFACE
 interface GeneratedIdeasState {

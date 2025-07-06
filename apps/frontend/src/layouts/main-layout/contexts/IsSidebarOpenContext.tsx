@@ -1,6 +1,4 @@
 "use client";
-
-import { initLogger } from "@/lib/logger";
 import { createContext, useContext, useState, JSX } from "react";
 
 // Define context
@@ -43,7 +41,6 @@ const IsSidebarOpenProvider = ({
 
 // Hook to access context
 const useIsSidebarOpenCtx = () => {
-  const log = initLogger("[useIsSidebarOpen]");
   return useContext(IsSidebarOpenContext);
 };
 

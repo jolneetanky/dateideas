@@ -2,12 +2,11 @@ import { initLogger } from "@/lib/logger";
 import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { generatedIdeasStatusChanged, jobIdChanged } from "./slice";
-import { nextCursorChanged } from "../pagination/slice";
+import { nextCursorChanged, prevCursorChanged } from "../pagination/slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { DateIdea } from "../dateidea/types";
 import generatorClient from "./api-client";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import next from "next";
 
 export const useInputBar = () => {
   const log = initLogger("[generator.hooks.useInputBar]");
@@ -20,17 +19,12 @@ export const useInputBar = () => {
     setLocationVal(val);
   };
 
-  // const location = useLocationContext()
-
   // dispatch
   const dispatch = useAppDispatch();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
-
-  // TODO: handle location here
-  // maybe can use some context
 
   // MUTATE
   const {
@@ -88,12 +82,12 @@ export const useInputBar = () => {
 
 export const useFetchDateIdea = (
   jobId: string,
-  after?: string,
-  limit?: number
+  cursor: string,
+  limit: number,
+  direction: "next" | "prev"
 ): UseFetchResponse<DateIdea> => {
-  const log = initLogger("[useFetchDateIdea");
   console.log(
-    `[generator.hooks.useFetchDateIdea()] Fetching date ideas for job ID ${jobId}. After: ${after}, Limit: ${limit}`
+    `[generator.hooks.useFetchDateIdea()] Fetching date ideas for job ID ${jobId}. Cursor: ${cursor}, Limit: ${limit}. Direction: ${direction}`
   );
   console.log("[useFetchDateIdea]");
 
@@ -101,20 +95,27 @@ export const useFetchDateIdea = (
 
   // will only be called again if `jobId` changes
   const { data: generatorClientResponse, isLoading: loading } = useQuery({
-    queryKey: [jobId, after, limit],
-    queryFn: async () => await generatorClient.getResult(jobId, after, limit),
+    queryKey: [jobId, cursor, limit, direction],
+    queryFn: async () =>
+      await generatorClient.getResult(jobId, cursor, limit, direction),
     enabled: jobId != "",
   });
 
   const dateidea = generatorClientResponse?.data?.data;
   const nextCursor = generatorClientResponse?.data?.nextCursor;
+  const prevCursor = generatorClientResponse?.data?.prevCursor;
+  // const curCursor = generatorClientResponse?.data?.prevCursor;
 
-  // TODO: store the next cursor
+  // TODO: store the next cursor and prev cursor
   useEffect(() => {
     if (nextCursor != undefined) {
       dispatch(nextCursorChanged(nextCursor));
     }
-  }, [generatorClientResponse]);
+
+    if (prevCursor != undefined) {
+      dispatch(prevCursorChanged(prevCursor));
+    }
+  }, [generatorClientResponse, dispatch, nextCursor]);
 
   return {
     data: dateidea ?? null,

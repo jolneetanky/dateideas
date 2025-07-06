@@ -15,9 +15,11 @@ export type ApiResponse<T> = {
 export type ApiCursorResponse<T> = {
   data: T;
   next_cursor: string;
+  prev_cursor: string;
 };
 
 export type ApiClientCursorResponse<T> = {
   data: T;
   nextCursor: string;
+  prevCursor: string;
 };

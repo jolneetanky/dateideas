@@ -1,5 +1,3 @@
-import { Sidebar } from "@/layouts/main-layout/Sidebar";
-import { IsSidebarOpenProvider } from "./contexts/IsSidebarOpenContext";
 import { ThemeToggle } from "@/features/theme/ThemeToggle";
 
 const MainLayoutStyle = {
