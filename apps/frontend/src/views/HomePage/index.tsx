@@ -93,7 +93,7 @@ export default function HomePage() {
   };
 
   const hasNext = () => {
-    return locations != undefined && locations.length == LIMIT;
+    return locations == undefined || locations.length == LIMIT;
   };
 
   const hasPrev = () => {
