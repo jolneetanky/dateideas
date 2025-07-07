@@ -7,8 +7,11 @@ import {
   ApiClientCursorResponse,
   ApiResponse,
 } from "@/api/types";
+// import dotenv from "dotenv";
+// dotenv.config(); // Load environment variables from .env file
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+console.log("API Key:", API_BASE_URL); // Use the environment variable as needed
 
 // HELPER FN
 const getLocation = async (
@@ -129,9 +132,7 @@ class GeneratorClient extends ApiClient<DateIdea> {
 
     try {
       const url = `${API_BASE_URL}/generator/results/${jobId}?cursor=${cursor}&limit=${limit}&direction=${direction}`;
-      console.log(
-        `[generator.apiClient.getDateIdea] GET ${API_BASE_URL}/generator/results/${jobId}?after=${cursor}&limit=${limit}&direction=${direction}`
-      );
+      console.log(`[generator.apiClient.getDateIdea] GET ${url}`);
 
       const response = await axios.get<
         ApiResponse<ApiCursorResponse<JsonDateIdea>>

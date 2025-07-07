@@ -93,11 +93,21 @@ export default function HomePage() {
   };
 
   const hasNext = () => {
-    return locations != undefined && locations.length == LIMIT;
+    return (
+      !generationLoading &&
+      !dateIdeaLoading &&
+      (locations == undefined || locations.length == LIMIT)
+    );
   };
 
   const hasPrev = () => {
-    return prevCursor != undefined && prevCursor != null;
+    return (
+      !generationLoading &&
+      !dateIdeaLoading &&
+      prevCursor != undefined &&
+      prevCursor != null &&
+      curCursor != "0"
+    );
   };
 
   return (

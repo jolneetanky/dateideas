@@ -37,11 +37,15 @@ class GeneratorDB(PostgresDB):
 
     def get_connection(self):
         # DEFINE THE DATABASE CREDENTIALS
+        logger = initLogger("generatorDB.get_connection()")
+
         user = os.getenv("GENERATOR_DB_USER")
         password = os.getenv("GENERATOR_DB_PASSWORD")
         host = os.getenv("GENERATOR_DB_HOST")
         port = os.getenv("GENERATOR_DB_PORT")
         database = os.getenv("GENERATOR_DB_NAME")
+
+        logger.info(f"USER: {user}, PW: {password}, HOST: {host}, PORT: {port}, DB: {database}")
 
         engine = create_engine(
             url="postgresql://{0}:{1}@{2}:{3}/{4}".format(

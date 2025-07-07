@@ -25,7 +25,7 @@ var ResultRepo repositories.ResultRepositoryImpl
 var GeneratorDb db.GeneratorDB
 
 func Init() {
-	// Build db
+	// Build db and connect
 	GeneratorDb = db.InitGeneratorDB()
 	GeneratorDb.ConnectDB()
 	GeneratorDb.ResetAllTables()
@@ -44,21 +44,3 @@ func Init() {
 	JobController = controllers.InitJobControllerImpl(JobService)
 	ResultController = controllers.InitResultControllerImpl(ResultService)
 }
-
-// func BuildGeneratorController(db *gorm.DB) controllers.GeneratorControllerImpl {
-// 	jobRepo := repositories.InitJobRepoImpl(db)
-// 	generatorService := services.InitGeneratorServiceImpl()
-// 	return controllers.InitGeneratorControllerImpl(generatorService)
-// }
-
-// func BuildJobController(db *gorm.DB) controllers.JobControllerImpl {
-// 	jobRepo := repositories.InitJobRepoImpl(db)
-// 	jobService := services.InitJobServiceImpl(jobRepo)
-// 	return controllers.InitJobControllerImpl(jobService)
-// }
-
-// func BuildResultController(db *gorm.DB) controllers.ResultControllerImpl {
-// 	resultRepo := repositories.InitResultRepoImpl(db)
-// 	resultService := services.InitResultServiceImpl(resultRepo)
-// 	return controllers.InitResultControllerImpl(resultService)
-// }

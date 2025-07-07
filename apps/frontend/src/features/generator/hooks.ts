@@ -2,7 +2,12 @@ import { initLogger } from "@/lib/logger";
 import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { generatedIdeasStatusChanged, jobIdChanged } from "./slice";
-import { nextCursorChanged, prevCursorChanged } from "../pagination/slice";
+import {
+  curCursorChanged,
+  directionChanged,
+  nextCursorChanged,
+  prevCursorChanged,
+} from "../pagination/slice";
 import { UseFetchResponse } from "@/common/types/hooks";
 import { DateIdea } from "../dateidea/types";
 import generatorClient from "./api-client";
@@ -48,6 +53,8 @@ export const useInputBar = () => {
     },
     onSuccess: (jobId) => {
       dispatch(jobIdChanged(jobId));
+      dispatch(curCursorChanged("0"));
+      dispatch(directionChanged("next"));
       dispatch(generatedIdeasStatusChanged("success"));
       log.info(`Successfully generated date ideas, jobID: ${jobId}`);
     },

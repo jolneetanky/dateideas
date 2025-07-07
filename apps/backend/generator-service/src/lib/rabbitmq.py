@@ -40,6 +40,7 @@ class QueueConsumer:
         self.job_repo = job_repo 
 
     def consume_queue(self):
+        logger = initLogger("[QueueConsumer.consume_queue()]")
         def callback(ch, method, properties, body: bytes):
             logger = initLogger("consumer")
             print(f"RECEIVED: {body}")
@@ -61,7 +62,7 @@ class QueueConsumer:
                 self.job_repo.update_job(job_id, status)
             except Exception as e:
                 logger.error(f"ERROR: {e}") 
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
+                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
                 # TODO: update job status to "error"
                 self.job_repo.update_job(job_id, Status.ERROR)
@@ -72,7 +73,7 @@ class QueueConsumer:
 
         # setup connection to rabbitmq and consume
         # pika works by having an infinite loop that keeps listening for messages.
-        connection = pika.BlockingConnection(pika.URLParameters("amqp://guest:guest@localhost:5672/"))
+        connection = pika.BlockingConnection(pika.URLParameters(os.getenv("RABBITMQ_CONNECTION_URL")))
         channel = connection.channel()
 
         # Declare the queue from which to consume messages
@@ -85,7 +86,7 @@ class QueueConsumer:
         channel.basic_consume(queue="job_queue", on_message_callback=callback, auto_ack=False) 
         # set auto_ack to false f\for manual ack and gereater reliability
 
-        print("Waiting for messages...")
+        logger.info("Waiting for messages...")
         channel.start_consuming() # blocking
         connection.close()
 

@@ -7,15 +7,17 @@ from repository.result_repo import ResultRepoImpl
 from lib.db.generatordb import generatorDB
 from lib.logger import initLogger
 from dotenv import load_dotenv
-from initializers.main import overpassApiClient, qdrantDB, embedder
-from domain.shared.place_data import VectoredPlaceData
-from utils.main import stringifyPlaceData
+from initializers.main import qdrantDB, embedder
 from lib.rabbitmq import initQueueConsumer
+
+# TODO: add retry logic for connecting to DB. Then check that a specific table exists
 
 def main():
     load_dotenv()
     logger = initLogger("main")
     generatorDB.connect_db()
+
+    # After successful connection, wait for 
 
     qdrantDB.initDB()
     # qdrantDB.deleteAllNodes()
