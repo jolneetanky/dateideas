@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["pino", "pino-pretty"],
     serverActions: {
-      // allowedOrigins: [""]
+      allowedOrigins: ["http://3.104.128.100"], // ✅ your EC2 public IP or domain
     },
   },
 };
