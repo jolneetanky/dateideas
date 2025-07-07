@@ -4,12 +4,7 @@ from repository.job_repo import JobRepo
 from repository.result_repo import ResultRepo
 from lib.logger import initLogger
 from initializers.main import generator
-from initializers.main import filterer
-from initializers.main import overpassApiClient
-from dataclasses import dataclass
-from lib.vectordb.base import VectorDB
 from lib.embedder.base import Embedder
-from domain.resource.message import Location
 import uuid
 from lib.vectordb.qdrant import QdrantDB
 

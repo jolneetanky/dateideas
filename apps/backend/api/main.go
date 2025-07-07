@@ -48,7 +48,7 @@ func main() {
 
 	// Enable CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://frontend:3000"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://frontend:3000", "http://localhost"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -66,7 +66,7 @@ func main() {
 	router.GET("/generator/results/:jobId", resultController.GetResultsByJobId)
 
 	// Get port
-	port := os.Getenv("PORT")
+	port := os.Getenv("BACKEND_API_PORT")
 	if port == "" {
 		port = "8080" // default fallback
 	}
