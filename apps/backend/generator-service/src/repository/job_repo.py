@@ -48,6 +48,7 @@ class JobRepoImpl(JobRepo):
             if job:
                 job.status = status.value 
                 session.commit()
+                logger.info("Successfully updated job status")
         except Exception as e:
             session.rollback()
             print(f"Failed to update job status: {e}")

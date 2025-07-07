@@ -24,8 +24,8 @@ func main() {
 
 	// Initialize logger
 	logger.InitLogger()
-	logger.Info(fmt.Sprintf("TEST:: %s", os.Getenv("GENERATOR_DB_HOST")))
 
+	// Initialize services, controllers, DB
 	factory.Init()
 
 	generatorController := factory.GeneratorController
@@ -34,6 +34,9 @@ func main() {
 
 	// Create new rabbitMQ connection
 	err = utils.NewRabbitMQConnection()
+	// Graceful shutdown
+	defer utils.RabbitMQClient.Conn.Close()
+	defer utils.RabbitMQClient.Channel.Close()
 
 	if err != nil {
 		logger.Error(fmt.Printf("Failed to create new RabbitMQ connection: %s", err.Error()))
@@ -45,7 +48,7 @@ func main() {
 
 	// Enable CORS
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:3000", "http://frontend:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -53,11 +56,21 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "pong"})
+	})
 	router.POST("/generator/generate", generatorController.Generate)
 
 	router.GET("/generator/status/:jobId", jobController.GetStatus)
 
 	router.GET("/generator/results/:jobId", resultController.GetResultsByJobId)
 
-	router.Run("localhost:8000") // NOTE: `gin.Run()` is BLOCKING!
+	// Get port
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // default fallback
+	}
+
+	logger.Info(fmt.Sprintf("Server up and running on port %s", port))
+	router.Run(":" + port) // NOTE: `gin.Run()` is BLOCKING!
 }

@@ -42,6 +42,7 @@ class QdrantDB(VectorDB):
             field_name="lon",
             field_schema=PayloadSchemaType.FLOAT,
         )
+        logger.info("Done indexing")
     
     def testPayload(self):
         res = self.qdrant_client.scroll(

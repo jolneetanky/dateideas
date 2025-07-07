@@ -12,10 +12,14 @@ from domain.shared.place_data import VectoredPlaceData
 from utils.main import stringifyPlaceData
 from lib.rabbitmq import initQueueConsumer
 
+# TODO: add retry logic for connecting to DB. Then check that a specific table exists
+
 def main():
     load_dotenv()
     logger = initLogger("main")
     generatorDB.connect_db()
+
+    # After successful connection, wait for 
 
     qdrantDB.initDB()
     # qdrantDB.deleteAllNodes()

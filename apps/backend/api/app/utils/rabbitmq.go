@@ -3,13 +3,14 @@ package utils
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/jolneetanky/dateideas/apps/backend/api/app/lib/logger"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var RabbitMQClient *RabbitMQ
+var RabbitMQClient *RabbitMQ // shared instance
 
 // STRUCT TO STORE RABBITMQ CONNECTION AND CHANNEL
 type RabbitMQ struct {
@@ -21,14 +22,15 @@ type RabbitMQ struct {
 func NewRabbitMQConnection() error {
 
 	// CONNECT TO RABBITMQ
-	logger.Info("Connecting to RabbitMQ server...")
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	logger.Info(fmt.Sprintf("Connecting to RabbitMQ server... URL: %s", os.Getenv("RABBITMQ_CONNECTION_URL")))
+	conn, err := amqp.Dial(os.Getenv("RABBITMQ_CONNECTION_URL"))
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error connecting to RabbitMQ Server: %s", err.Error()))
 		return err
 	}
 
 	// defer conn.Close()
+	logger.Info("Successfully connected to RabbitMQ server")
 
 	// OPEN A RABBITMQ CHANNEL
 	logger.Info("Creating a channel...")
