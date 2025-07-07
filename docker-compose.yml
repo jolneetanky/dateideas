@@ -18,10 +18,58 @@ services:
     image: rabbitmq:4-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"     # AMQP protocol port
-      - "15672:15672"   # Management UI port
-    restart: always     # Optional: auto-restart if container crashes
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    restart: always # Optional: auto-restart if container crashes
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  backend-api:
+    build:
+      context: ./apps/backend/api
+      dockerfile: Dockerfile
+    container_name: backend-api
+    env_file:
+      - ./apps/backend/api/.env # 👈 Specific to this service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - rabbitmq
+    restart: unless-stopped
+
+  generator-worker:
+    build:
+      context: ./apps/backend/generator-service
+    container_name: generator-worker
+    depends_on:
+      - postgres
+      - rabbitmq
+      - backend-api
+    env_file:
+      - ./apps/backend/generator-service/.env # 👈 Specific to this service
+    # restart: always
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+    container_name: frontend
+    ports:
+      - "3000:3000"
+      - "80:3000"
+    depends_on:
+      - backend-api
+    env_file:
+      - ./apps/frontend/.env
+    restart: on-failure
 
 volumes:
   pgdata:
+
 
