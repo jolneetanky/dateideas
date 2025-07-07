@@ -33,7 +33,7 @@ services:
       dockerfile: Dockerfile
     container_name: backend-api
     env_file:
-      - .env # 👈 Specific to this service
+      - ./apps/backend/api/.env # 👈 Specific to this service
     ports:
       - "8080:8080"
     depends_on:
@@ -50,7 +50,7 @@ services:
       - rabbitmq
       - backend-api
     env_file:
-      - .env
+      - ./apps/backend/generator-service/.env # Specific to this service
     # restart: always
     restart: on-failure
 
@@ -59,6 +59,8 @@ services:
       context: ./apps/frontend
       args:
         NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+        # NEXT_PUBLIC_API_BASE_URL: http://backend-api:8080
+        # NEXT_PUBLIC_API_BASE_URL: http://3.104.128.100:8080
     container_name: frontend
     ports:
       - "80:3000" # Only expose on port 80 for HTTP
