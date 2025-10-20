@@ -33,7 +33,6 @@ def get_loc_str(lat: float, lon: float):
     logger.info(f"\nLocation of the given Latitude and Longitude: {location}")
     return location
 
-job_repo = JobRepoImpl() # TODO: pass  in as dependency
 class QueueConsumer:
     def __init__(self, worker: WorkerImpl, job_repo: JobRepoImpl):
         self.worker = worker
@@ -52,7 +51,6 @@ class QueueConsumer:
                 formatted_body = format_message(body)
                 lat, lon = formatted_body.location["lat"], formatted_body.location["lon"]
                 loc_str = get_loc_str(lat, lon)
-
 
                 logger.info("Generating...")
                 status = self.worker.generate(job_id, formatted_body.prompt, loc_str, formatted_body.location["lat"], formatted_body.location["lon"], formatted_body.location["radius_km"], formatted_body.budget)

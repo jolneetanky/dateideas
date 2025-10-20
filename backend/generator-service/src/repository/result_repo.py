@@ -1,8 +1,22 @@
 from abc import ABC, abstractmethod
 import uuid
 from lib.db.generatordb import generatorDB
-from domain.entity.result import Result
+# from repository.base import Base
+from custom_types import Base
+# from domain.entity.result import Result
 from lib.logger import initLogger
+
+from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
+
+# Type definition for SQLAlchemy
+class Result(Base):
+    __tablename__ = 'results'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    job_id = Column(UUID(as_uuid=True), ForeignKey('jobs.id'))
+    description = Column(String)  # Stores the generated date idea text
+    node_id = Column(String)      # Stores the overpass node ID (as string)
 
 class ResultRepo(ABC):
     def __init__(self):

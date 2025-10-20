@@ -2,9 +2,18 @@
 from lib.logger import initLogger
 from abc import ABC, abstractmethod
 from lib.db.generatordb import generatorDB
-from domain.entity.job import Job
-from domain.shared.job import Status
+from custom_types import Status
+from custom_types import Job
+# from domain.entity.job import Job
+# from domain.shared.job import Status
+
+# from repository.base import Base
+# from dataclasses import dataclass
 import uuid
+# from domain.resource.message import JobQueueConsumedMessage
+
+
+# The shape in DB; for SQLAlchemy to know
 
 # abstract class
 # NOTE: this layer is just an abstraction so that we can swap out the underlying DB anytime.

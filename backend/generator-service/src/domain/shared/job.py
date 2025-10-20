@@ -7,7 +7,7 @@ class Status(Enum):
     PENDING="pending"
     ERROR="error"
 
-@dataclass
-class Job:
-    id: uuid.UUID
-    status: Status
+# @dataclass
+# class Job:
+#     id: uuid.UUID
+#     status: Status
