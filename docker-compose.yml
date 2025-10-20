@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -18,10 +18,9 @@ services:
     image: rabbitmq:4-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"     # AMQP protocol port
-      - "15672:15672"   # Management UI port
-    restart: always     # Optional: auto-restart if container crashes
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    restart: always # Optional: auto-restart if container crashes
 
 volumes:
   pgdata:
-

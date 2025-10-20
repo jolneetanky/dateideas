@@ -1,2 +1,24 @@
+# ────────── Global ignores ──────────
+node_modules/
 .env
+.env.*
+__pycache__/
+*.pyc
+dist/
+build/
+.DS_Store
+.vscode/
+.idea/
+*.log
 
+# Go
+bin/
+*.exe
+*.out
+
+# Python
+*.egg-info/
+.venv/
+
+# Docker
+*.pid
